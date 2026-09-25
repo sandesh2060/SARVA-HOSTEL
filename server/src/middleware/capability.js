@@ -1,0 +1,1 @@
+const {capabilitiesFor}=require('../config/capabilities'); module.exports=(cap)=> (req,res,next)=> req.hostel&&capabilitiesFor(req.hostel).includes(cap)?next():res.status(403).json({message:`Feature not enabled: ${cap}`});

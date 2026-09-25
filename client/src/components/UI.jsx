@@ -1,0 +1,10 @@
+import React from 'react';
+export const money=(n,c='NPR')=>new Intl.NumberFormat(undefined,{style:'currency',currency:c,maximumFractionDigits:2}).format(Number(n||0));
+export function Page({title,subtitle,action,children}){return <div className="space-y-6"><div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><h1 className="text-2xl font-bold text-slate-900">{title}</h1>{subtitle&&<p className="mt-1 text-sm text-slate-500">{subtitle}</p>}</div>{action}</div>{children}</div>}
+export function Card({title,children,className=''}){return <section className={`rounded-2xl border border-slate-200 bg-white p-5 shadow-sm ${className}`}>{title&&<h2 className="mb-4 font-semibold text-slate-900">{title}</h2>}{children}</section>}
+export function KPI({label,value,help}){return <Card><div className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</div><div className="mt-2 text-2xl font-bold">{value}</div>{help&&<div className="mt-1 text-xs text-slate-400">{help}</div>}</Card>}
+export const Input=(p)=><input {...p} className={`w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-slate-500 ${p.className||''}`}/>;
+export const Select=(p)=><select {...p} className={`w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-slate-500 ${p.className||''}`}/>;
+export const Button=({className='',...p})=><button {...p} className={`rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50 ${className}`}/>;
+export function Empty({children='No records found.'}){return <div className="py-10 text-center text-sm text-slate-500">{children}</div>}
+export function Table({heads,children}){return <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="border-b bg-slate-50 text-xs uppercase text-slate-500"><tr>{heads.map(h=><th className="px-3 py-3" key={h}>{h}</th>)}</tr></thead><tbody className="divide-y">{children}</tbody></table></div>}

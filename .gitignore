@@ -1,0 +1,13 @@
+node_modules/
+client/node_modules/
+server/node_modules/
+.env
+.env.*
+!.env.example
+dist/
+client/dist/
+.DS_Store
+*.log
+.sarva_patch_backups/
+SARVA_HOSTEL_REMAINING_MASTER.patch
+SARVA_HOSTEL_REMAINING_MASTER_PATCH.zip
