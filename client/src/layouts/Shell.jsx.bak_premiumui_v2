@@ -1,0 +1,23 @@
+import { Outlet, useLocation } from 'react-router-dom';
+import Sidebar from './Sidebar';
+
+/**
+ * App shell: renders the sidebar once, and the active page via <Outlet />.
+ * Sidebar (nav) lives in ./Sidebar.jsx; each page's own top bar (title,
+ * period selector, actions) is rendered inside that page's component.
+ */
+export default function Shell() {
+  const location = useLocation();
+
+  return (
+    <div className="min-h-screen bg-sarva-bg">
+      <Sidebar />
+
+      <main className="min-h-screen p-4 sm:p-6 lg:ml-64 lg:p-8">
+        <div className="mx-auto max-w-7xl" key={location.pathname}>
+          <Outlet />
+        </div>
+      </main>
+    </div>
+  );
+}

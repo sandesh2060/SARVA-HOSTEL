@@ -1,0 +1,34 @@
+import React from 'react';
+import { Badge } from './UI';
+
+/**
+ * Reusable page header / top bar.
+ *
+ * Props:
+ *  - title:    main heading text (string or node)
+ *  - badge:    optional short label shown next to the title (e.g. plan name)
+ *  - subtitle: secondary line under the title (string or node)
+ *  - actions:  right-aligned content (buttons, selects, etc.)
+ *  - className: extra classes for the outer wrapper
+ */
+export default function TopBar({ title, badge, subtitle, actions, className = '' }) {
+  return (
+    <div
+      className={`flex flex-col gap-4 border-b border-sarva-border pb-5 lg:flex-row lg:items-center lg:justify-between ${className}`}
+    >
+      <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold tracking-tight text-sarva-text">{title}</h1>
+          {badge && (
+            <Badge tone="muted">
+              {String(badge).toUpperCase()}
+            </Badge>
+          )}
+        </div>
+        {subtitle && <p className="text-sm text-sarva-muted">{subtitle}</p>}
+      </div>
+
+      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+    </div>
+  );
+}

@@ -1,0 +1,126 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --sarva-primary: #5C2A3D;
+  --sarva-primary-hover: #4A2231;
+  --sarva-primary-dark: #3A1A26;
+  --sarva-primary-soft: #F4E9EC;
+  --sarva-gold: #C99A3B;
+  --sarva-gold-soft: #FBF3E1;
+  --sarva-bg: #F7F5F6;
+  --sarva-surface: #FFFFFF;
+  --sarva-border: #E7DEE1;
+  --sarva-text: #241318;
+  --sarva-muted: #7A6670;
+  --sarva-success: #1F8A5F;
+  --sarva-warning: #B7791F;
+  --sarva-danger: #B3261E;
+}
+
+html { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+
+body {
+  background-color: var(--sarva-bg);
+  background-image: radial-gradient(circle at top right, rgba(201,154,59,0.06), transparent 45%);
+  color: var(--sarva-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display { font-family: 'Fraunces', ui-serif, Georgia, serif; }
+
+input, select, textarea {
+  @apply w-full rounded-xl px-3 py-2 text-sm outline-none transition;
+  border: 1px solid var(--sarva-border);
+  background-color: #ffffff;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--sarva-primary);
+  box-shadow: 0 0 0 3px rgba(92, 42, 61, 0.14);
+}
+select { appearance: none; -webkit-appearance: none; background-image: none; }
+
+button { @apply rounded-xl px-4 py-2 font-medium transition; }
+
+table { @apply w-full text-sm; }
+th { @apply text-left font-medium py-3; color: var(--sarva-muted); }
+td { @apply py-3; border-top: 1px solid var(--sarva-border); }
+
+.card {
+  @apply rounded-2xl p-5;
+  border: 1px solid var(--sarva-border);
+  background-color: var(--sarva-surface);
+  box-shadow: 0 1px 2px 0 rgba(36, 19, 24, 0.04), 0 1px 3px 0 rgba(36, 19, 24, 0.06);
+}
+
+.bg-sarva-bg { background-color: var(--sarva-bg); }
+.bg-sarva-surface { background-color: var(--sarva-surface); }
+.bg-sarva-primary { background-color: var(--sarva-primary); }
+.bg-sarva-primaryDark { background-color: var(--sarva-primary-dark); }
+.bg-sarva-danger { background-color: var(--sarva-danger); }
+.bg-sarva-primarySoft { background-color: var(--sarva-primary-soft); }
+.bg-sarva-goldSoft { background-color: var(--sarva-gold-soft); }
+.bg-sarva-primarySoft\/40 { background-color: rgba(244, 233, 236, 0.4); }
+.bg-sarva-gold { background-color: var(--sarva-gold); }
+
+.text-sarva-text { color: var(--sarva-text); }
+.text-sarva-muted { color: var(--sarva-muted); }
+.text-sarva-primary { color: var(--sarva-primary); }
+.text-sarva-gold { color: var(--sarva-gold); }
+.text-sarva-success { color: var(--sarva-success); }
+.text-sarva-warning { color: var(--sarva-warning); }
+.text-sarva-danger { color: var(--sarva-danger); }
+
+.border-sarva-border { border-color: var(--sarva-border); }
+.divide-sarva-border > :not([hidden]) ~ :not([hidden]) { border-color: var(--sarva-border); }
+
+.hover\:bg-sarva-primaryHover:hover { background-color: var(--sarva-primary-hover); }
+.hover\:bg-sarva-primarySoft:hover { background-color: var(--sarva-primary-soft); }
+.hover\:text-sarva-primary:hover { color: var(--sarva-primary); }
+.focus\:border-sarva-primary:focus { border-color: var(--sarva-primary); }
+.focus\:ring-sarva-primary\/20:focus { box-shadow: 0 0 0 2px rgba(92, 42, 61, 0.2); }
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes sarva-fade-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes sarva-shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+  @keyframes sarva-spin { to { transform: rotate(360deg); } }
+
+  .animate-fade-in { animation: sarva-fade-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .animate-fade-in-delay-0 { animation: sarva-fade-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .animate-fade-in-delay-1 { animation: sarva-fade-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 0.06s; }
+  .animate-fade-in-delay-2 { animation: sarva-fade-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 0.12s; }
+  .animate-fade-in-delay-3 { animation: sarva-fade-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 0.18s; }
+  .animate-fade-in-delay-4 { animation: sarva-fade-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 0.24s; }
+
+  .skeleton {
+    background: linear-gradient(90deg, var(--sarva-border) 25%, #f2eaee 37%, var(--sarva-border) 63%);
+    background-size: 400px 100%;
+    animation: sarva-shimmer 1.4s ease-in-out infinite;
+    border-radius: 0.75rem;
+  }
+  .sarva-spinner {
+    display: inline-block; width: 14px; height: 14px; border-radius: 999px;
+    border: 2px solid currentColor; border-top-color: transparent; opacity: 0.9;
+    animation: sarva-spin 0.6s linear infinite;
+  }
+}
+
+::selection { background: var(--sarva-primary-soft); color: var(--sarva-primary); }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--sarva-border); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--sarva-muted); }
+
+a, button, input, select, textarea, .nav-link {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.12s ease;
+}
+button:active:not(:disabled) { transform: scale(0.97); }
+
+.card { transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease; }
+.card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 28px -10px rgba(36, 19, 24, 0.16); border-color: var(--sarva-primary-soft); }
+
+.sarva-table tbody tr { transition: background-color 0.15s ease; }
+.sarva-table tbody tr:hover { background-color: var(--sarva-primary-soft); }

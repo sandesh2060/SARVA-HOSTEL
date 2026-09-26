@@ -1,0 +1,422 @@
+import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import api from '../services/api';
+import { Page, Card, Input, Select, Button, Table, Badge, Empty, money } from '../components/UI';
+import { useAuth } from '../context/Auth';
+import {
+  UserRound, MapPin, Users2, GraduationCap, BedDouble, FileText, Search, Trash2, ImagePlus,
+} from 'lucide-react';
+
+const initial = {
+  name: '', email: '', phone: '', alternatePhone: '', dob: '', gender: '', bloodGroup: '',
+  permanentAddress: '', currentAddress: '', sameAddress: true,
+  guardianName: '', guardianPhone: '', guardianRelation: 'Parent',
+  localGuardianName: '', localGuardianPhone: '', localGuardianAddress: '',
+  institution: '', course: '', year: '',
+  monthlyFee: '', admissionDate: new Date().toISOString().slice(0, 10), billingMode: 'anniversary',
+  notes: '',
+};
+
+const documentTypes = [
+  ['citizenship', 'Citizenship'],
+  ['nid', 'National ID (NID)'],
+  ['passport', 'Passport'],
+  ['birth_certificate', 'Birth Certificate'],
+  ['student_id', 'Student ID'],
+  ['driving_licence', 'Driving Licence'],
+  ['other', 'Other'],
+];
+
+const STATUS_TONE = {
+  active: 'success',
+  on_leave: 'warning',
+  on_hold: 'muted',
+  suspended: 'danger',
+  checked_out: 'muted',
+};
+
+const STATUS_LABEL = {
+  active: 'Active',
+  on_leave: 'On leave',
+  on_hold: 'On hold',
+  suspended: 'Suspended',
+  checked_out: 'Checked out',
+};
+
+export default function Students() {
+  const { hostel } = useAuth();
+
+  const [rows, setRows] = useState([]);
+  const [form, setForm] = useState(initial);
+  const [query, setQuery] = useState('');
+  const [photo, setPhoto] = useState(null);
+  const [docs, setDocs] = useState([]);
+  const [rooms, setRooms] = useState([]);
+  const [beds, setBeds] = useState([]);
+  const [roomId, setRoomId] = useState('');
+  const [bedId, setBedId] = useState('');
+  const [roomLoading, setRoomLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+
+  const set = (k, v) => setForm((x) => ({ ...x, [k]: v }));
+
+  const load = useCallback(async (q = '') => {
+    setLoading(true);
+    try {
+      const { data } = await api.get('/students', { params: q ? { q } : {} });
+      setRows(data);
+    } catch (e) {
+      setError(e.response?.data?.message || e.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const loadRooms = useCallback(async () => {
+    setRoomLoading(true);
+    try {
+      const { data } = await api.get('/rooms/overview');
+      setRooms(data.rooms || []);
+      setBeds(data.beds || []);
+    } catch (e) {
+      if (e.response?.status !== 403) setError(e.response?.data?.message || e.message);
+    } finally {
+      setRoomLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void load();
+    void loadRooms();
+  }, [load, loadRooms]);
+
+  const selectedRoom = rooms.find((r) => r._id === roomId);
+  const roomBeds = beds.filter((b) => b.roomId === roomId || b.roomId?._id === roomId);
+  const availableBeds = roomBeds.filter((b) => b.status === 'available' && !b.studentId);
+  const occupiedCount = roomBeds.filter((b) => b.status === 'occupied' || b.studentId).length;
+
+  const addDoc = () =>
+    setDocs((x) => [...x, { id: `${Date.now()}-${Math.random()}`, type: 'citizenship', side: 'front', number: '', file: null }]);
+  const editDoc = (id, p) => setDocs((x) => x.map((d) => (d.id === id ? { ...d, ...p } : d)));
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setError('');
+    setMessage('');
+    try {
+      if (!form.name.trim() || !form.phone.trim() || !form.permanentAddress.trim() || !form.guardianName.trim() || !form.guardianPhone.trim()) {
+        throw new Error('Complete all fields marked *');
+      }
+      const fee = Number(form.monthlyFee);
+      if (!Number.isFinite(fee) || fee < 0) throw new Error('Enter a valid monthly fee');
+
+      const payload = {
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        alternatePhone: form.alternatePhone,
+        dob: form.dob || undefined,
+        gender: form.gender,
+        bloodGroup: form.bloodGroup,
+        address: { permanent: form.permanentAddress, current: form.sameAddress ? form.permanentAddress : form.currentAddress },
+        guardian: { name: form.guardianName, phone: form.guardianPhone, relation: form.guardianRelation },
+        localGuardian: { name: form.localGuardianName, phone: form.localGuardianPhone, address: form.localGuardianAddress },
+        academic: { institution: form.institution, course: form.course, year: form.year },
+        monthlyFee: fee,
+        admissionDate: form.admissionDate,
+        billingMode: form.billingMode,
+        notes: form.notes,
+      };
+
+      const { data: s } = await api.post('/students', payload);
+
+      if (bedId) {
+        try {
+          await api.post('/rooms/assign', { studentId: s._id, bedId, reason: 'Initial assignment during student registration' });
+        } catch (assignError) {
+          setMessage(`Student ${s.studentCode} was registered, but room assignment failed. Open the student profile or Rooms & Beds to assign manually.`);
+          throw assignError;
+        }
+      }
+
+      if (photo) {
+        const fd = new FormData();
+        fd.append('photo', photo);
+        await api.post(`/students/${s._id}/photo`, fd);
+      }
+
+      for (const d of docs) {
+        if (!d.file) continue;
+        const fd = new FormData();
+        fd.append('file', d.file);
+        fd.append('type', d.type);
+        fd.append('side', d.side);
+        fd.append('number', d.number);
+        await api.post(`/students/${s._id}/documents`, fd);
+      }
+
+      setForm({ ...initial, admissionDate: new Date().toISOString().slice(0, 10) });
+      setPhoto(null);
+      setDocs([]);
+      setRoomId('');
+      setBedId('');
+      setMessage('Student registered successfully.');
+      await Promise.all([load(query), loadRooms()]);
+    } catch (e) {
+      setError(e.response?.data?.message || e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const status = async (s, v) => {
+    await api.patch(`/students/${s._id}`, { status: v });
+    await load(query);
+  };
+
+  return (
+    <Page title="Students" subtitle="Student profile, guardian, address, billing, photo and identity documents.">
+      <Card>
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="font-semibold text-sarva-text">Register student</h2>
+          <span className="text-xs text-sarva-muted">Fields marked * are required</span>
+        </div>
+
+        <form onSubmit={submit} className="space-y-6">
+          <Section icon={UserRound} title="Personal">
+            <Input required placeholder="Student name *" value={form.name} onChange={(e) => set('name', e.target.value)} />
+            <Input required placeholder="Phone *" value={form.phone} onChange={(e) => set('phone', e.target.value)} />
+            <Input type="email" placeholder="Email (optional)" value={form.email} onChange={(e) => set('email', e.target.value)} />
+            <Input placeholder="Alternate phone" value={form.alternatePhone} onChange={(e) => set('alternatePhone', e.target.value)} />
+            <Input type="date" value={form.dob} onChange={(e) => set('dob', e.target.value)} />
+            <Select value={form.gender} onChange={(e) => set('gender', e.target.value)}>
+              <option value="">Gender (optional)</option>
+              <option>Male</option>
+              <option>Female</option>
+              <option>Other</option>
+            </Select>
+            <Input placeholder="Blood group" value={form.bloodGroup} onChange={(e) => set('bloodGroup', e.target.value)} />
+            <label className="flex items-center gap-2 rounded-xl border border-sarva-border bg-white px-3 py-2.5 text-sm text-sarva-muted">
+              <ImagePlus size={16} className="shrink-0 text-sarva-primary" />
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="w-full text-xs file:mr-2 file:rounded-lg file:border-0 file:bg-sarva-primarySoft file:px-2 file:py-1 file:text-sarva-primary"
+                onChange={(e) => setPhoto(e.target.files?.[0] || null)}
+              />
+            </label>
+          </Section>
+
+          <Section icon={MapPin} title="Address">
+            <Input required placeholder="Permanent address *" value={form.permanentAddress} onChange={(e) => set('permanentAddress', e.target.value)} />
+            <label className="flex items-center gap-2 rounded-xl border border-sarva-border bg-white px-3 py-2.5 text-sm">
+              <input type="checkbox" checked={form.sameAddress} onChange={(e) => set('sameAddress', e.target.checked)} />
+              Same current address
+            </label>
+            {!form.sameAddress && (
+              <Input placeholder="Current address" value={form.currentAddress} onChange={(e) => set('currentAddress', e.target.value)} />
+            )}
+          </Section>
+
+          <Section icon={Users2} title="Parent / guardian">
+            <Input required placeholder="Parent / guardian name *" value={form.guardianName} onChange={(e) => set('guardianName', e.target.value)} />
+            <Input required placeholder="Parent / guardian phone *" value={form.guardianPhone} onChange={(e) => set('guardianPhone', e.target.value)} />
+            <Input placeholder="Relationship" value={form.guardianRelation} onChange={(e) => set('guardianRelation', e.target.value)} />
+            <Input placeholder="Local guardian name" value={form.localGuardianName} onChange={(e) => set('localGuardianName', e.target.value)} />
+            <Input placeholder="Local guardian phone" value={form.localGuardianPhone} onChange={(e) => set('localGuardianPhone', e.target.value)} />
+            <Input placeholder="Local guardian address" value={form.localGuardianAddress} onChange={(e) => set('localGuardianAddress', e.target.value)} />
+          </Section>
+
+          <Section icon={GraduationCap} title="Academic & billing">
+            <Input placeholder="School / college" value={form.institution} onChange={(e) => set('institution', e.target.value)} />
+            <Input placeholder="Course / faculty" value={form.course} onChange={(e) => set('course', e.target.value)} />
+            <Input placeholder="Year / semester" value={form.year} onChange={(e) => set('year', e.target.value)} />
+            <Input required type="number" min="0" step="0.01" placeholder="Monthly fee *" value={form.monthlyFee} onChange={(e) => set('monthlyFee', e.target.value)} />
+            <Input required type="date" value={form.admissionDate} onChange={(e) => set('admissionDate', e.target.value)} />
+            <Select value={form.billingMode} onChange={(e) => set('billingMode', e.target.value)}>
+              <option value="anniversary">Admission-date cycle</option>
+              <option value="calendar">Calendar-month cycle</option>
+            </Select>
+          </Section>
+
+          <div className="rounded-2xl border border-sarva-border p-4">
+            <div className="mb-3 flex items-center gap-2">
+              <BedDouble size={16} className="text-sarva-primary" />
+              <b className="text-sm text-sarva-text">Room assignment (optional)</b>
+            </div>
+            <p className="mb-3 text-xs text-sarva-muted">
+              Assign an available bed now, or leave this blank and assign the student later from Rooms & Beds.
+            </p>
+            {roomLoading ? (
+              <div className="text-sm text-sarva-muted">Loading rooms and beds…</div>
+            ) : !rooms.length ? (
+              <div className="rounded-xl bg-sarva-primarySoft/40 p-3 text-sm text-sarva-muted">
+                No rooms exist yet. Create rooms and beds from{' '}
+                <Link className="font-semibold text-sarva-primary underline" to="/rooms">Rooms & Beds</Link>, then return here.
+              </div>
+            ) : (
+              <div className="grid gap-3 md:grid-cols-2">
+                <Select value={roomId} onChange={(e) => { setRoomId(e.target.value); setBedId(''); }}>
+                  <option value="">No room selected</option>
+                  {rooms.map((r) => (
+                    <option key={r._id} value={r._id}>
+                      {[r.building, r.floor, r.name].filter(Boolean).join(' · ')} —{' '}
+                      {beds.filter((b) => b.roomId === r._id || b.roomId?._id === r._id).filter((b) => b.status === 'available' && !b.studentId).length} available
+                    </option>
+                  ))}
+                </Select>
+                <Select value={bedId} disabled={!roomId} onChange={(e) => setBedId(e.target.value)}>
+                  <option value="">{roomId ? 'Select available bed' : 'Select room first'}</option>
+                  {availableBeds.map((b) => (
+                    <option key={b._id} value={b._id}>
+                      {b.label}{b.price ? ` · ${money(b.price?.$numberDecimal ?? b.price, hostel?.currency || 'NPR')}` : ''}
+                    </option>
+                  ))}
+                </Select>
+                {selectedRoom && (
+                  <div className="rounded-xl bg-sarva-primarySoft/40 px-3 py-2 text-xs text-sarva-muted md:col-span-2">
+                    Room {selectedRoom.name} · {roomBeds.length} beds · {occupiedCount} occupied · {availableBeds.length} available
+                    {bedId ? ' · Bed selected' : ''}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-2xl border border-sarva-border p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileText size={16} className="text-sarva-primary" />
+                <div>
+                  <b className="text-sm text-sarva-text">Documents (optional)</b>
+                  <p className="text-xs text-sarva-muted">Citizenship/NID: add Front and Back separately. JPG/PNG/WEBP/PDF, max 8 MB.</p>
+                </div>
+              </div>
+              <Button type="button" variant="ghost" onClick={addDoc}>+ Add document</Button>
+            </div>
+            {docs.map((d) => (
+              <div key={d.id} className="mb-2 grid gap-2 md:grid-cols-5">
+                <Select
+                  value={d.type}
+                  onChange={(e) => editDoc(d.id, { type: e.target.value, side: ['citizenship', 'nid'].includes(e.target.value) ? 'front' : 'single' })}
+                >
+                  {documentTypes.map(([v, l]) => (
+                    <option value={v} key={v}>{l}</option>
+                  ))}
+                </Select>
+                <Select value={d.side} onChange={(e) => editDoc(d.id, { side: e.target.value })}>
+                  {['citizenship', 'nid'].includes(d.type) ? (
+                    <>
+                      <option value="front">Front</option>
+                      <option value="back">Back</option>
+                    </>
+                  ) : (
+                    <option value="single">Document</option>
+                  )}
+                </Select>
+                <Input placeholder="Document number" value={d.number} onChange={(e) => editDoc(d.id, { number: e.target.value })} />
+                <Input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,application/pdf"
+                  onChange={(e) => editDoc(d.id, { file: e.target.files?.[0] || null })}
+                />
+                <button
+                  type="button"
+                  className="flex items-center justify-center gap-1 rounded-xl border border-sarva-border px-3 text-sm text-sarva-danger hover:bg-rose-50"
+                  onClick={() => setDocs((x) => x.filter((a) => a.id !== d.id))}
+                >
+                  <Trash2 size={14} /> Remove
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <textarea
+            className="w-full rounded-xl border border-sarva-border bg-white p-3 text-sm outline-none focus:border-sarva-primary focus:ring-2 focus:ring-sarva-primary/20"
+            placeholder="Notes (optional)"
+            value={form.notes}
+            onChange={(e) => set('notes', e.target.value)}
+          />
+
+          <Button disabled={saving}>{saving ? 'Registering & uploading…' : 'Register Student'}</Button>
+        </form>
+
+        {error && <div className="mt-4 rounded-xl bg-rose-50 p-3 text-sm text-sarva-danger">{error}</div>}
+        {message && <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-sarva-success">{message}</div>}
+      </Card>
+
+      <Card title="Student directory">
+        <form className="mb-4 flex gap-2" onSubmit={(e) => { e.preventDefault(); load(query); }}>
+          <div className="relative flex-1">
+            <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sarva-muted" />
+            <Input className="pl-9" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search student" />
+          </div>
+          <Button>Search</Button>
+        </form>
+
+        {loading ? (
+          <div className="py-8 text-center text-sm text-sarva-muted">Loading…</div>
+        ) : !rows.length ? (
+          <Empty>No students registered yet.</Empty>
+        ) : (
+          <Table heads={['Photo', 'ID', 'Student', 'Contact', 'Guardian', 'Monthly fee', 'Status', 'Action']}>
+            {rows.map((s) => (
+              <tr key={s._id}>
+                <td className="p-3">
+                  {s.photo?.url ? (
+                    <img src={s.photo.url} className="h-10 w-10 rounded-full object-cover" alt={s.name} />
+                  ) : (
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sarva-primarySoft text-sm font-semibold text-sarva-primary">
+                      {s.name?.[0]?.toUpperCase() || '?'}
+                    </div>
+                  )}
+                </td>
+                <td className="p-3 font-mono text-xs text-sarva-muted">{s.studentCode}</td>
+                <td className="p-3">
+                  <Link className="font-semibold text-sarva-text underline-offset-2 hover:underline" to={`/students/${s._id}`}>
+                    {s.name}
+                  </Link>
+                  <div className="text-xs text-sarva-muted">{s.address?.permanent || s.email}</div>
+                </td>
+                <td className="p-3">{s.phone}</td>
+                <td className="p-3">
+                  {s.guardian?.name || '—'}
+                  <div className="text-xs text-sarva-muted">{s.guardian?.phone}</div>
+                </td>
+                <td className="p-3 font-semibold">{money(s.monthlyFee?.$numberDecimal ?? s.monthlyFee, hostel?.currency || 'NPR')}</td>
+                <td className="p-3">
+                  <Badge tone={STATUS_TONE[s.status] || 'muted'}>{STATUS_LABEL[s.status] || s.status}</Badge>
+                </td>
+                <td className="p-3">
+                  <Select value={s.status} onChange={(e) => status(s, e.target.value)}>
+                    <option value="active">Active</option>
+                    <option value="on_leave">On leave</option>
+                    <option value="on_hold">On hold</option>
+                    <option value="suspended">Suspended</option>
+                    <option value="checked_out">Checked out</option>
+                  </Select>
+                </td>
+              </tr>
+            ))}
+          </Table>
+        )}
+      </Card>
+    </Page>
+  );
+}
+
+function Section({ icon: Icon, title, children }) {
+  return (
+    <div>
+      <div className="mb-3 flex items-center gap-2">
+        {Icon && <Icon size={16} className="text-sarva-primary" />}
+        <h3 className="text-sm font-semibold text-sarva-text">{title}</h3>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{children}</div>
+    </div>
+  );
+}

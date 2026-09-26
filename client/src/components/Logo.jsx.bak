@@ -1,0 +1,48 @@
+import React from 'react';
+
+/**
+ * SARVA brand mark + wordmark.
+ *
+ * Props:
+ *  - showWordmark: whether to render "SARVA Hostel" text next to the mark (default true)
+ *  - size: pixel size of the monogram badge (default 36)
+ *  - className: extra classes for the outer wrapper
+ *
+ * This is a placeholder monogram ("S" in a rounded badge) built with the
+ * current brand maroon. Swap the <svg> markup below for a traced logo
+ * asset later without changing any call sites.
+ */
+export default function Logo({ showWordmark = true, size = 36, className = '' }) {
+  return (
+    <div className={`flex items-center gap-2 ${className}`}>
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 40 40"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+        className="shrink-0"
+      >
+        <rect width="40" height="40" rx="10" fill="#5b1a2e" />
+        <text
+          x="50%"
+          y="54%"
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fontFamily="system-ui, sans-serif"
+          fontWeight="700"
+          fontSize="20"
+          fill="#f5b942"
+        >
+          S
+        </text>
+      </svg>
+
+      {showWordmark && (
+        <span className="text-xl font-bold leading-none text-white">
+          SARVA <span className="text-sarva-accent">Hostel</span>
+        </span>
+      )}
+    </div>
+  );
+}

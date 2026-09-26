@@ -1,6 +1,10 @@
-require("dotenv").config({
-  path: require("path").resolve(__dirname, "../../.env"),
-});
+const path = require("path");
+const fs = require("fs");
+const dotenv = require("dotenv");
+const rootEnv = path.resolve(__dirname, "../../.env");
+const serverEnv = path.resolve(__dirname, "../.env");
+const envPath = fs.existsSync(rootEnv) ? rootEnv : serverEnv;
+dotenv.config({ path: envPath });
 const express = require("express"),
   cors = require("cors"),
   helmet = require("helmet"),
@@ -8,6 +12,7 @@ const express = require("express"),
 const db = require("./config/db");
 const api = require("./routes/api");
 const remaining = require("./routes/remaining");
+const completion = require("./routes/completion");
 const admin = require("./routes/adminIntegration");
 const { startBillingJob } = require("./jobs/billing");
 const { startReminderJob } = require("./jobs/reminders");
@@ -22,10 +27,10 @@ app.use(
 app.use(express.json({ limit: "2mb" }));
 app.use("/api", rateLimit({ windowMs: 60000, limit: 300 }), api);
 app.use("/api", remaining);
+app.use("/api", completion);
 app.use("/integration/sarva", admin);
-app.get("/health", (req, res) =>
-  res.json({ ok: true, service: "sarva-hostel-api" }),
-);
+app.get("/api/health", (req, res) => res.json({ success: true, service: "SARVA Hostel API" }));
+app.get("/health", (req, res) => res.json({ success: true, service: "SARVA Hostel API" }));
 app.use((e, req, res, next) => {
   console.error(e);
   res.status(e.status || 500).json({ message: e.message || "Server error" });

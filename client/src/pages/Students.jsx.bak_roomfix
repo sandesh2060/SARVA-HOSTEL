@@ -1,0 +1,271 @@
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import api from '../services/api';
+import { Page, Card, Input, Select, Button, Badge, Empty, money } from '../components/UI';
+import { useAuth } from '../context/Auth';
+import { Search, Plus } from 'lucide-react';
+
+const STATUS_TONE = {
+  active: 'success',
+  on_leave: 'warning',
+  on_hold: 'muted',
+  suspended: 'danger',
+  checked_out: 'muted',
+};
+
+const STATUS_LABEL = {
+  active: 'Active',
+  on_leave: 'On leave',
+  on_hold: 'On hold',
+  suspended: 'Suspended',
+  checked_out: 'Checked out',
+};
+
+const STATUS_FILTERS = [
+  ['all', 'All'],
+  ['active', 'Active'],
+  ['on_leave', 'On leave'],
+  ['on_hold', 'On hold'],
+  ['suspended', 'Suspended'],
+  ['checked_out', 'Checked out'],
+];
+
+export default function Students() {
+  const { hostel } = useAuth();
+  const nav = useNavigate();
+
+  const [rows, setRows] = useState([]);
+  const [beds, setBeds] = useState([]);
+  const [query, setQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const load = useCallback(async (q = '') => {
+    setLoading(true);
+    setError('');
+    try {
+      const { data } = await api.get('/students', { params: q ? { q } : {} });
+      setRows(data);
+    } catch (e) {
+      setError(e.response?.data?.message || e.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const loadRooms = useCallback(async () => {
+    try {
+      const { data } = await api.get('/rooms/overview');
+      setBeds(data.beds || []);
+    } catch {
+      // Room management may be disabled — Room/Bed column simply won't render.
+    }
+  }, []);
+
+  useEffect(() => {
+    void load();
+    void loadRooms();
+  }, [load, loadRooms]);
+
+  const bedByStudent = useMemo(() => {
+    const map = new Map();
+    for (const b of beds) {
+      if (b.studentId) map.set(b.studentId._id || b.studentId, b);
+    }
+    return map;
+  }, [beds]);
+
+  const filtered = useMemo(() => {
+    if (statusFilter === 'all') return rows;
+    return rows.filter((s) => s.status === statusFilter);
+  }, [rows, statusFilter]);
+
+  const counts = useMemo(() => {
+    const c = { total: rows.length, active: 0, on_leave: 0, checked_out: 0 };
+    for (const s of rows) {
+      if (s.status === 'active') c.active++;
+      if (s.status === 'on_leave') c.on_leave++;
+      if (s.status === 'checked_out') c.checked_out++;
+    }
+    return c;
+  }, [rows]);
+
+  const openStudent = (id) => nav(`/students/${id}`);
+
+  return (
+    <Page
+      title="Students"
+      subtitle="Manage hostel students and records."
+      action={
+        <Button onClick={() => nav('/students/new')}>
+          <Plus size={16} /> Add Student
+        </Button>
+      }
+    >
+      {/* Summary counts */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <SummaryStat label="Total students" value={counts.total} />
+        <SummaryStat label="Active" value={counts.active} />
+        <SummaryStat label="On leave" value={counts.on_leave} />
+        <SummaryStat label="Checked out" value={counts.checked_out} />
+      </div>
+
+      {/* Search + filter */}
+      <Card className="mt-4">
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <form className="relative flex-1" onSubmit={(e) => { e.preventDefault(); load(query); }}>
+            <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sarva-muted" />
+            <Input
+              className="pl-9"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by name, student ID, phone or email…"
+            />
+          </form>
+          <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="sm:w-48">
+            {STATUS_FILTERS.map(([v, l]) => (
+              <option key={v} value={v}>{l}</option>
+            ))}
+          </Select>
+        </div>
+      </Card>
+
+      {/* List */}
+      <Card className="mt-4">
+        {error && <div className="mb-4 rounded-xl bg-rose-50 p-3 text-sm text-sarva-danger">{error}</div>}
+
+        {loading ? (
+          <div className="py-8 text-center text-sm text-sarva-muted">Loading…</div>
+        ) : !filtered.length ? (
+          rows.length ? (
+            <Empty>No students match your search.</Empty>
+          ) : (
+            <div className="py-12 text-center">
+              <p className="text-sm font-semibold text-sarva-text">No students yet</p>
+              <p className="mt-1 text-sm text-sarva-muted">Register your first student to start managing billing, rooms and hostel records.</p>
+              <Button className="mt-4" onClick={() => nav('/students/new')}>
+                <Plus size={16} /> Register Student
+              </Button>
+            </div>
+          )
+        ) : (
+          <>
+            {/* Desktop table */}
+            <div className="hidden overflow-x-auto md:block">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-sarva-border bg-sarva-primarySoft/40 text-xs uppercase text-sarva-muted">
+                  <tr>
+                    <th className="px-3 py-3">Student</th>
+                    <th className="px-3 py-3">Contact</th>
+                    <th className="px-3 py-3">Room / Bed</th>
+                    <th className="px-3 py-3">Monthly fee</th>
+                    <th className="px-3 py-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-sarva-border">
+                  {filtered.map((s) => {
+                    const bed = bedByStudent.get(s._id);
+                    return (
+                      <tr
+                        key={s._id}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => openStudent(s._id)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') openStudent(s._id); }}
+                        className="cursor-pointer transition hover:bg-sarva-primarySoft/40 focus:outline-none focus:bg-sarva-primarySoft/40"
+                      >
+                        <td className="p-3">
+                          <div className="flex items-center gap-3">
+                            {s.photo?.url ? (
+                              <img src={s.photo.url} className="h-10 w-10 rounded-full object-cover" alt={s.name} />
+                            ) : (
+                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sarva-primarySoft text-sm font-semibold text-sarva-primary">
+                                {s.name?.[0]?.toUpperCase() || '?'}
+                              </div>
+                            )}
+                            <div>
+                              <div className="font-semibold text-sarva-text">{s.name}</div>
+                              <div className="text-xs text-sarva-muted">{s.studentCode}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-3">
+                          <div>{s.phone}</div>
+                          {s.email && <div className="text-xs text-sarva-muted">{s.email}</div>}
+                        </td>
+                        <td className="p-3">
+                          {bed ? (
+                            <span>{bed.roomId?.name || bed.roomId} · {bed.label}</span>
+                          ) : (
+                            <span className="text-sarva-muted">Not assigned</span>
+                          )}
+                        </td>
+                        <td className="p-3 font-semibold">
+                          {money(s.monthlyFee?.$numberDecimal ?? s.monthlyFee, hostel?.currency || 'NPR')}
+                        </td>
+                        <td className="p-3">
+                          <Badge tone={STATUS_TONE[s.status] || 'muted'}>{STATUS_LABEL[s.status] || s.status}</Badge>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="space-y-3 md:hidden">
+              {filtered.map((s) => {
+                const bed = bedByStudent.get(s._id);
+                return (
+                  <div
+                    key={s._id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => openStudent(s._id)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') openStudent(s._id); }}
+                    className="cursor-pointer rounded-xl border border-sarva-border p-3 transition hover:bg-sarva-primarySoft/40"
+                  >
+                    <div className="flex items-center gap-3">
+                      {s.photo?.url ? (
+                        <img src={s.photo.url} className="h-10 w-10 rounded-full object-cover" alt={s.name} />
+                      ) : (
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sarva-primarySoft text-sm font-semibold text-sarva-primary">
+                          {s.name?.[0]?.toUpperCase() || '?'}
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-sarva-text">{s.name}</span>
+                          <Badge tone={STATUS_TONE[s.status] || 'muted'}>{STATUS_LABEL[s.status] || s.status}</Badge>
+                        </div>
+                        <div className="text-xs text-sarva-muted">{s.studentCode}</div>
+                      </div>
+                    </div>
+                    <div className="mt-2 space-y-1 text-xs text-sarva-muted">
+                      <div>{s.phone}</div>
+                      <div>{bed ? `${bed.roomId?.name || bed.roomId} · ${bed.label}` : 'Not assigned'}</div>
+                      <div className="font-semibold text-sarva-text">
+                        {money(s.monthlyFee?.$numberDecimal ?? s.monthlyFee, hostel?.currency || 'NPR')}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </Card>
+    </Page>
+  );
+}
+
+function SummaryStat({ label, value }) {
+  return (
+    <div className="rounded-2xl border border-sarva-border bg-sarva-surface p-4">
+      <div className="text-xs uppercase tracking-wide text-sarva-muted">{label}</div>
+      <div className="mt-1 text-xl font-bold text-sarva-text">{value}</div>
+    </div>
+  );
+}

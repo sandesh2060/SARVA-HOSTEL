@@ -34,3 +34,7 @@ Standalone MERN Hostel Management SaaS designed to integrate with the existing S
 ## Important
 This starter intentionally contains no secrets. Google OAuth, Cloudinary multipart upload UI, eSewa production signing/callback verification, PDF/Excel reports and the actual patches to the existing SARVA Admin should be completed after credentials/deployment URLs are configured. The schemas and integration boundary are prepared for them.
 # SARVA-HOSTEL
+
+
+### Environment loading
+The API prefers the project-root `.env`. For local development it also accepts `server/.env` when a root `.env` is not present. Never commit either file.

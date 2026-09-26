@@ -1,3 +1,51 @@
-import {NavLink,Outlet} from 'react-router-dom';import {useAuth} from '../context/Auth';import {LayoutDashboard,Users,WalletCards,BadgeDollarSign,ReceiptText,Package,BedDouble,ClipboardCheck,UserRoundCog,Bell,ChartNoAxesCombined,FileText,Settings,LogOut} from 'lucide-react';
-const items=[["/","Dashboard","dashboard",LayoutDashboard],["/students","Students","students",Users],["/payments","Payments","payments",WalletCards],["/credits","Credits","credit",BadgeDollarSign],["/expenses","Expenses","expenses",ReceiptText],["/stock","Stock","stock",Package],["/rooms","Rooms & Beds","rooms",BedDouble],["/attendance","Attendance","attendance",ClipboardCheck],["/staff","Staff & Salary","staff",UserRoundCog],["/notifications","Notifications","email_notifications",Bell],["/analytics","Analytics","operational_analytics",ChartNoAxesCombined],["/reports","Reports","reports",FileText],["/settings","Settings","settings",Settings]];
-export default function Shell(){const{hostel,logout}=useAuth();const caps=hostel?.capabilities||[];return <div className="min-h-screen bg-slate-50"><aside className="fixed inset-y-0 hidden w-64 flex-col bg-slate-950 p-5 text-white lg:flex"><div className="text-2xl font-black tracking-tight">SARVA <span className="text-slate-400">Hostel</span></div><div className="mb-7 mt-1 text-xs text-slate-400">{hostel?.name} · {hostel?.plan?.toUpperCase()}</div><nav className="flex-1 space-y-1 overflow-y-auto">{items.filter(x=>x[2]==='dashboard'||caps.includes(x[2])).map(([to,label,,Icon])=><NavLink end={to==='/'} key={to} to={to} className={({isActive})=>`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm ${isActive?'bg-white text-slate-950':'text-slate-300 hover:bg-slate-900 hover:text-white'}`}><Icon size={17}/>{label}</NavLink>)}</nav><button onClick={logout} className="mt-4 flex items-center gap-2 rounded-xl bg-slate-900 px-3 py-2.5 text-sm"><LogOut size={16}/> Sign out</button></aside><main className="min-h-screen p-4 sm:p-6 lg:ml-64 lg:p-8"><div className="mx-auto max-w-7xl"><Outlet/></div></main></div>}
+import { Outlet, useLocation } from 'react-router-dom';
+import { Bell, UserRound } from 'lucide-react';
+import Sidebar from './Sidebar';
+import { useAuth } from '../context/Auth';
+
+/**
+ * App shell: sidebar + a persistent top bar + the active page via <Outlet />.
+ * The top bar is global (hostel identity, notifications, account) and stays
+ * fixed while each page's own title/subtitle/actions render just below it
+ * via <TopBar /> inside <Page />.
+ */
+export default function Shell() {
+  const location = useLocation();
+  const { hostel } = useAuth();
+
+  return (
+    <div className="min-h-screen bg-sarva-bg">
+      <Sidebar />
+
+      <div className="min-h-screen lg:ml-64">
+        <header className="sarva-topbar sticky top-0 z-20 flex items-center justify-between border-b border-sarva-border px-4 py-3 sm:px-6 lg:px-8">
+          <div className="text-sm font-semibold text-sarva-text">
+            {hostel?.name || 'SARVA Hostel'}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="rounded-full p-2 text-sarva-muted transition hover:bg-sarva-primarySoft hover:text-sarva-primary"
+              aria-label="Notifications"
+            >
+              <Bell size={18} />
+            </button>
+            <button
+              type="button"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-sarva-primarySoft text-sarva-primary transition hover:bg-sarva-primary hover:text-white"
+              aria-label="Account"
+            >
+              <UserRound size={17} />
+            </button>
+          </div>
+        </header>
+
+        <main className="p-4 sm:p-6 lg:p-8">
+          <div className="mx-auto max-w-7xl" key={location.pathname}>
+            <Outlet />
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}

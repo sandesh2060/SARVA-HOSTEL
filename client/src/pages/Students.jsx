@@ -1,1 +1,238 @@
-import {useEffect,useState} from 'react';import api from '../services/api';export default function Students(){const [rows,setRows]=useState([]),[f,setF]=useState({name:'',email:'',phone:'',monthlyFee:'',admissionDate:'',billingMode:'anniversary'});const load=()=>api.get('/students').then(r=>setRows(r.data));useEffect(load,[]);return <><h1 className="text-3xl font-bold mb-6">Students</h1><form className="card grid md:grid-cols-3 gap-3 mb-6" onSubmit={async e=>{e.preventDefault();await api.post('/students',f);setF({...f,name:'',email:'',phone:'',monthlyFee:''});load()}}>{['name','email','phone','monthlyFee','admissionDate'].map(k=><input key={k} type={k==='admissionDate'?'date':'text'} placeholder={k} value={f[k]} onChange={e=>setF({...f,[k]:e.target.value})}/>)}<select value={f.billingMode} onChange={e=>setF({...f,billingMode:e.target.value})}><option value="anniversary">Admission-date cycle</option><option value="calendar">Calendar-month cycle</option></select><button className="bg-slate-950 text-white">Register Student</button></form><div className="card"><table><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Monthly Fee</th><th>Status</th></tr></thead><tbody>{rows.map(s=><tr key={s._id}><td>{s.studentCode}</td><td>{s.name}</td><td>{s.email}</td><td>{s.phone}</td><td>{String(s.monthlyFee||0)}</td><td>{s.status}</td></tr>)}</tbody></table></div></>}
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
+import { Page, Card, Input, Select, Button, Badge, Empty, StatCard, money } from '../components/UI';
+import { useAuth } from '../context/Auth';
+import { Search, Plus, Users, UserCheck, Clock, LogOut as LogOutIcon } from 'lucide-react';
+
+const STATUS_TONE = {
+  active: 'success',
+  on_leave: 'warning',
+  on_hold: 'muted',
+  suspended: 'danger',
+  checked_out: 'muted',
+};
+
+const STATUS_LABEL = {
+  active: 'Active',
+  on_leave: 'On leave',
+  on_hold: 'On hold',
+  suspended: 'Suspended',
+  checked_out: 'Checked out',
+};
+
+const STATUS_FILTERS = [
+  ['all', 'All'],
+  ['active', 'Active'],
+  ['on_leave', 'On leave'],
+  ['on_hold', 'On hold'],
+  ['suspended', 'Suspended'],
+  ['checked_out', 'Checked out'],
+];
+
+export default function Students() {
+  const { hostel } = useAuth();
+  const nav = useNavigate();
+
+  const [rows, setRows] = useState([]);
+  const [beds, setBeds] = useState([]);
+  const [query, setQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const load = useCallback(async (q = '') => {
+    setLoading(true);
+    setError('');
+    try {
+      const { data } = await api.get('/students', { params: q ? { q } : {} });
+      setRows(data);
+    } catch (e) {
+      setError(e.response?.data?.message || e.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const [rooms, setRooms] = useState([]);
+
+  const loadRooms = useCallback(async () => {
+    try {
+      const { data } = await api.get('/rooms/overview');
+      setRooms(data.rooms || []);
+      setBeds(data.beds || []);
+    } catch {
+      // Room management may be disabled -- Room/Bed column simply won't render.
+    }
+  }, []);
+
+  useEffect(() => {
+    void load();
+    void loadRooms();
+  }, [load, loadRooms]);
+
+  const roomById = useMemo(() => {
+    const map = new Map();
+    for (const r of rooms) map.set(r._id, r);
+    return map;
+  }, [rooms]);
+
+  const bedByStudent = useMemo(() => {
+    const map = new Map();
+    for (const b of beds) {
+      if (b.studentId) map.set(b.studentId._id || b.studentId, b);
+    }
+    return map;
+  }, [beds]);
+
+  const roomLabel = (bed) => {
+    if (!bed) return null;
+    const roomIdValue = bed.roomId?._id || bed.roomId;
+    const room = roomById.get(roomIdValue);
+    const name = room ? [room.building, room.floor, room.name].filter(Boolean).join(' \u00b7 ') : null;
+    return name ? `${name} \u00b7 ${bed.label}` : `Bed ${bed.label}`;
+  };
+
+  const filtered = useMemo(() => {
+    if (statusFilter === 'all') return rows;
+    return rows.filter((s) => s.status === statusFilter);
+  }, [rows, statusFilter]);
+
+  const counts = useMemo(() => {
+    const c = { total: rows.length, active: 0, on_leave: 0, checked_out: 0 };
+    for (const s of rows) {
+      if (s.status === 'active') c.active++;
+      if (s.status === 'on_leave') c.on_leave++;
+      if (s.status === 'checked_out') c.checked_out++;
+    }
+    return c;
+  }, [rows]);
+
+  const openStudent = (id) => nav(`/students/${id}`);
+
+  return (
+    <Page
+      title="Students"
+      subtitle="Manage hostel students and records."
+      action={
+        <Button onClick={() => nav('/students/new')}>
+          <Plus size={16} /> Add Student
+        </Button>
+      }
+    >
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <StatCard label="Total students" value={counts.total} icon={Users} tone="primary" />
+        <StatCard label="Active" value={counts.active} icon={UserCheck} tone="success" />
+        <StatCard label="On leave" value={counts.on_leave} icon={Clock} tone="warning" />
+        <StatCard label="Checked out" value={counts.checked_out} icon={LogOutIcon} tone="gold" />
+      </div>
+
+      <Card className="mt-4">
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <form className="relative flex-1" onSubmit={(e) => { e.preventDefault(); load(query); }}>
+            <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sarva-muted" />
+            <Input
+              className="pl-9"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by name, student ID, phone or email\u2026"
+            />
+          </form>
+          <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="sm:w-48">
+            {STATUS_FILTERS.map(([v, l]) => (
+              <option key={v} value={v}>{l}</option>
+            ))}
+          </Select>
+        </div>
+      </Card>
+
+      <Card className="mt-4">
+        {error && <div className="mb-4 rounded-xl bg-rose-50 p-3 text-sm text-sarva-danger">{error}</div>}
+
+        {loading ? (
+          <div className="py-8 text-center text-sm text-sarva-muted">Loading\u2026</div>
+        ) : !filtered.length ? (
+          rows.length ? (
+            <Empty>No students match your search.</Empty>
+          ) : (
+            <div className="py-12 text-center">
+              <p className="text-sm font-semibold text-sarva-text">No students yet</p>
+              <p className="mt-1 text-sm text-sarva-muted">Register your first student to start managing billing, rooms and hostel records.</p>
+              <Button className="mt-4" onClick={() => nav('/students/new')}>
+                <Plus size={16} /> Register Student
+              </Button>
+            </div>
+          )
+        ) : (
+          <div
+            className="grid gap-5"
+            style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 260px))' }}
+          >
+            {filtered.map((s) => {
+              const bed = bedByStudent.get(s._id);
+              const fee = money(s.monthlyFee?.$numberDecimal ?? s.monthlyFee, hostel?.currency || 'NPR');
+              const roomText = bed ? roomLabel(bed) : 'Not assigned';
+              return (
+                <div
+                  key={s._id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => openStudent(s._id)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') openStudent(s._id); }}
+                  className="group cursor-pointer overflow-hidden rounded-3xl border border-sarva-border bg-sarva-surface shadow-premium-sm transition hover:-translate-y-1 hover:shadow-premium focus:outline-none focus:ring-2 focus:ring-sarva-primary/40"
+                >
+                  <div className="relative aspect-[3/4] w-full overflow-hidden bg-gradient-to-br from-sarva-primarySoft to-sarva-goldSoft">
+                    {s.photo?.url ? (
+                      <img
+                        src={s.photo.url}
+                        alt={s.name}
+                        className="absolute inset-0 h-full w-full object-cover object-top"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-sarva-primary to-sarva-primaryDark">
+                        <span className="font-display text-6xl font-semibold text-white/90">
+                          {s.name?.[0]?.toUpperCase() || '?'}
+                        </span>
+                      </div>
+                    )}
+                    <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
+
+                    <span className="absolute right-3 top-3">
+                      <Badge tone={STATUS_TONE[s.status] || 'muted'}>{STATUS_LABEL[s.status] || s.status}</Badge>
+                    </span>
+
+                    <div className="absolute inset-x-0 bottom-0 p-4">
+                      <div className="font-display text-lg font-semibold leading-tight text-white">{s.name}</div>
+                      <div className="text-xs tracking-wide text-white/70">{s.studentCode}</div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 divide-x divide-sarva-border border-b border-sarva-border text-center">
+                    <div className="px-2 py-3">
+                      <div className="text-sm font-bold text-sarva-text">{fee}</div>
+                      <div className="text-[11px] text-sarva-muted">Monthly fee</div>
+                    </div>
+                    <div className="px-2 py-3">
+                      <div className="truncate text-sm font-bold text-sarva-text">{roomText}</div>
+                      <div className="text-[11px] text-sarva-muted">Room</div>
+                    </div>
+                  </div>
+
+                  <div className="p-3">
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); openStudent(s._id); }}
+                      className="w-full rounded-full bg-sarva-primary py-2.5 text-sm font-semibold text-white shadow-premium-sm transition hover:bg-sarva-primaryHover hover:shadow-premium"
+                    >
+                      View Profile
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Card>
+    </Page>
+  );
+}

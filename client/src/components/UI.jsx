@@ -1,10 +1,147 @@
 import React from 'react';
-export const money=(n,c='NPR')=>new Intl.NumberFormat(undefined,{style:'currency',currency:c,maximumFractionDigits:2}).format(Number(n||0));
-export function Page({title,subtitle,action,children}){return <div className="space-y-6"><div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><h1 className="text-2xl font-bold text-slate-900">{title}</h1>{subtitle&&<p className="mt-1 text-sm text-slate-500">{subtitle}</p>}</div>{action}</div>{children}</div>}
-export function Card({title,children,className=''}){return <section className={`rounded-2xl border border-slate-200 bg-white p-5 shadow-sm ${className}`}>{title&&<h2 className="mb-4 font-semibold text-slate-900">{title}</h2>}{children}</section>}
-export function KPI({label,value,help}){return <Card><div className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</div><div className="mt-2 text-2xl font-bold">{value}</div>{help&&<div className="mt-1 text-xs text-slate-400">{help}</div>}</Card>}
-export const Input=(p)=><input {...p} className={`w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-slate-500 ${p.className||''}`}/>;
-export const Select=(p)=><select {...p} className={`w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-slate-500 ${p.className||''}`}/>;
-export const Button=({className='',...p})=><button {...p} className={`rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50 ${className}`}/>;
-export function Empty({children='No records found.'}){return <div className="py-10 text-center text-sm text-slate-500">{children}</div>}
-export function Table({heads,children}){return <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="border-b bg-slate-50 text-xs uppercase text-slate-500"><tr>{heads.map(h=><th className="px-3 py-3" key={h}>{h}</th>)}</tr></thead><tbody className="divide-y">{children}</tbody></table></div>}
+import { ChevronDown } from 'lucide-react';
+import TopBar from './TopBar';
+
+export const money = (n, c = 'NPR') =>
+  new Intl.NumberFormat(undefined, { style: 'currency', currency: c, maximumFractionDigits: 2 }).format(Number(n || 0));
+
+export function Page({ title, subtitle, action, children }) {
+  return (
+    <div className="animate-fade-in space-y-6">
+      <TopBar title={title} subtitle={subtitle} actions={action} />
+      {children}
+    </div>
+  );
+}
+
+export function Card({ title, children, className = '', hover = false }) {
+  return (
+    <section className={`card rounded-2xl border border-sarva-border bg-sarva-surface p-5 ${hover ? 'card-hover' : ''} ${className}`}>
+      {title && <h2 className="mb-4 font-semibold text-sarva-text">{title}</h2>}
+      {children}
+    </section>
+  );
+}
+
+export function KPI({ label, value, help, icon: Icon, className = '' }) {
+  return (
+    <Card hover className={className}>
+      <div className="flex items-center justify-between">
+        <div className="text-xs font-medium uppercase tracking-wide text-sarva-muted">{label}</div>
+        {Icon && (
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-sarva-primarySoft text-sarva-primary">
+            <Icon size={16} />
+          </span>
+        )}
+      </div>
+      <div className="mt-2 text-2xl font-bold tabular-nums tracking-tight text-sarva-text">{value}</div>
+      {help && <div className="mt-1 text-xs text-sarva-muted">{help}</div>}
+    </Card>
+  );
+}
+
+export function StatCard({ label, value, icon: Icon, tone = 'primary' }) {
+  const TONES = {
+    primary: { bg: 'bg-sarva-primarySoft', text: 'text-sarva-primary' },
+    success: { bg: 'bg-emerald-50', text: 'text-sarva-success' },
+    warning: { bg: 'bg-amber-50', text: 'text-sarva-warning' },
+    gold: { bg: 'bg-sarva-goldSoft', text: 'text-sarva-gold' },
+  };
+  const t = TONES[tone] || TONES.primary;
+  return (
+    <div className="card-hover rounded-2xl border border-sarva-border bg-sarva-surface p-4 shadow-premium-sm">
+      <div className="flex items-center justify-between">
+        <div className="text-[11px] font-semibold uppercase tracking-wider text-sarva-muted">{label}</div>
+        {Icon && (
+          <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${t.bg} ${t.text}`}>
+            <Icon size={15} />
+          </span>
+        )}
+      </div>
+      <div className="mt-2 text-3xl font-bold tabular-nums tracking-tight text-sarva-text">{value}</div>
+    </div>
+  );
+}
+
+export const Input = (p) => (
+  <input
+    {...p}
+    className={`w-full rounded-xl border border-sarva-border bg-white px-3 py-2.5 text-sm outline-none
+                focus:border-sarva-primary focus:ring-2 focus:ring-sarva-primary/20 ${p.className || ''}`}
+  />
+);
+
+export const Select = ({ className = '', ...p }) => (
+  <div className="relative">
+    <select
+      {...p}
+      className={`w-full appearance-none rounded-xl border border-sarva-border bg-white px-3 py-2.5 pr-9 text-sm outline-none
+                  focus:border-sarva-primary focus:ring-2 focus:ring-sarva-primary/20 ${className}`}
+    />
+    <ChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sarva-muted" />
+  </div>
+);
+
+const BUTTON_STYLES = {
+  primary: 'bg-sarva-primary text-white shadow-premium-sm hover:bg-sarva-primaryHover hover:-translate-y-0.5 hover:shadow-premium',
+  ghost: 'border border-sarva-border text-sarva-text hover:bg-sarva-primarySoft',
+  danger: 'bg-sarva-danger text-white hover:opacity-90',
+};
+
+export const Button = ({ className = '', variant = 'primary', loading = false, disabled, children, ...p }) => (
+  <button
+    {...p}
+    disabled={disabled || loading}
+    className={`inline-flex flex-row flex-nowrap items-center justify-center gap-2 whitespace-nowrap rounded-xl px-5 py-2.5 text-sm font-semibold
+                disabled:cursor-not-allowed disabled:opacity-50 ${BUTTON_STYLES[variant] || BUTTON_STYLES.primary} ${className}`}
+  >
+    {loading && <span className="sarva-spinner shrink-0" aria-hidden="true" />}
+    <span className={`flex items-center gap-2 ${loading ? 'opacity-80' : ''}`}>{children}</span>
+  </button>
+);
+
+const BADGE_TONES = {
+  muted: 'bg-sarva-primarySoft text-sarva-primary',
+  success: 'bg-emerald-50 text-sarva-success',
+  warning: 'bg-amber-50 text-sarva-warning',
+  danger: 'bg-rose-50 text-sarva-danger',
+};
+
+export function Badge({ tone = 'muted', children }) {
+  return <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${BADGE_TONES[tone] || BADGE_TONES.muted}`}>{children}</span>;
+}
+
+export function Empty({ children = 'No records found.' }) {
+  return <div className="animate-fade-in py-12 text-center text-sm text-sarva-muted">{children}</div>;
+}
+
+export function Skeleton({ className = 'h-10 w-full' }) {
+  return <div className={`skeleton ${className}`} />;
+}
+
+export function SkeletonRows({ rows = 3, className = 'h-10 w-full' }) {
+  return (
+    <div className="space-y-2">
+      {Array.from({ length: rows }).map((_, i) => (
+        <Skeleton key={i} className={className} />
+      ))}
+    </div>
+  );
+}
+
+export function Table({ heads, children }) {
+  return (
+    <div className="sarva-table overflow-x-auto">
+      <table className="w-full text-left text-sm">
+        <thead className="border-b border-sarva-border bg-sarva-primarySoft/40 text-xs uppercase text-sarva-muted">
+          <tr>
+            {heads.map((h) => (
+              <th className="px-3 py-3" key={h}>{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-sarva-border">{children}</tbody>
+      </table>
+    </div>
+  );
+}

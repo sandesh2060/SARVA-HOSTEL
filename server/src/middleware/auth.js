@@ -11,7 +11,7 @@ exports.auth=async(req,res,next)=>{try{
   if(user.hostelId){
     req.hostel=await Hostel.findById(user.hostelId);
     if(!req.hostel)return res.status(401).json({message:'Hostel unavailable'});
-    if(user.role==='owner'&&req.hostel.status!=='approved')return res.status(403).json({message:`Hostel is ${req.hostel.status}`});
+    if(req.hostel.status!=='approved')return res.status(403).json({message:`Hostel is ${req.hostel.status}`});
   }
   next();
 }catch(e){
