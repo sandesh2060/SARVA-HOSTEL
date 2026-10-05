@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Bell, UserRound, QrCode, X } from 'lucide-react';
 import Sidebar from './Sidebar';
 import { useAuth } from '../context/Auth';
+import api from '../services/api';
 
 /**
  * Floating round button, fixed to the bottom-right of the viewport on every
@@ -58,12 +59,31 @@ export default function Shell() {
   const location = useLocation();
   const { hostel } = useAuth();
 
+  // Keep an active user's API session warm and detect a sleeping/degraded API.
+  // This is deliberately visibility-aware: it avoids background battery/network
+  // waste and is not a substitute for an always-on production Render plan.
+  useEffect(() => {
+    let timer;
+    const ping = () => {
+      if (document.visibilityState === 'visible') {
+        api.get('/health', { timeout: 12000 }).catch(() => undefined);
+      }
+    };
+    ping();
+    timer = window.setInterval(ping, 10 * 60 * 1000);
+    document.addEventListener('visibilitychange', ping);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', ping);
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-sarva-bg">
       <Sidebar />
 
       <div className="min-h-screen pb-[calc(5.25rem+env(safe-area-inset-bottom))] lg:ml-64 lg:pb-0">
-        <header className="sarva-topbar sticky top-[49px] z-20 hidden lg:flex flex items-center justify-between border-b border-sarva-border px-4 py-3 sm:px-6 lg:px-8">
+        <header className="sarva-topbar sticky top-0 z-20 hidden lg:flex items-center justify-between border-b border-sarva-border px-4 py-3 sm:px-6 lg:px-8">
           <div className="text-sm font-semibold text-sarva-text">
             {hostel?.name || 'SARVA Hostel'}
           </div>
@@ -85,8 +105,8 @@ export default function Shell() {
           </div>
         </header>
 
-        <main className="w-full min-w-0 px-3 py-4 sm:p-6 lg:p-8">
-          <div className="mx-auto w-full min-w-0 max-w-7xl" key={location.pathname}>
+        <main className="w-full min-w-0 px-3 py-4 sm:px-5 sm:py-6 lg:p-8">
+          <div className="mx-auto w-full min-w-0 max-w-[1440px]" key={location.pathname}>
             <Outlet />
           </div>
         </main>

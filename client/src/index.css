@@ -310,3 +310,134 @@ img, svg, video, canvas { max-width: 100%; }
   .sarva-mobile-tab { font-size: 9px; }
   .sarva-mobile-tab-icon { width: 28px; }
 }
+
+/* ==========================================================================
+   SARVA HOSTEL PRODUCTION RESPONSIVE / APP-SHELL PASS
+   ========================================================================== */
+
+#root {
+  min-height: 100dvh;
+  min-width: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Prevent children from forcing the application wider than the viewport. */
+main,
+main > div,
+section,
+article,
+form,
+.card,
+.sarva-page-header,
+.sarva-page-actions {
+  min-width: 0;
+}
+
+/* Desktop application shell. */
+@media (min-width: 1024px) {
+  .sarva-topbar {
+    min-height: 64px;
+  }
+}
+
+/* Tablet/mobile application shell. */
+@media (max-width: 1023px) {
+  body {
+    background-image: none;
+  }
+
+  main {
+    padding-bottom: calc(6.5rem + env(safe-area-inset-bottom)) !important;
+  }
+
+  .sarva-page-actions > * {
+    min-width: 0;
+  }
+
+  .sarva-page-actions > .relative,
+  .sarva-page-actions > div {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 639px) {
+  .sarva-page-header {
+    margin-bottom: 0.25rem;
+  }
+
+  .sarva-page-actions {
+    overflow-x: auto;
+    flex-wrap: nowrap !important;
+    padding: 1px 0 4px;
+    scrollbar-width: none;
+  }
+
+  .sarva-page-actions::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sarva-page-actions > button {
+    flex: 0 0 auto;
+    min-height: 44px;
+  }
+
+  .card {
+    padding: 1rem;
+    border-radius: 1.25rem !important;
+  }
+
+  .card h2 {
+    line-height: 1.25;
+  }
+
+  /* Keep large tables inside their own horizontal scroll area. */
+  .sarva-table {
+    margin-inline: 0;
+    border-radius: 1rem;
+    overscroll-behavior-x: contain;
+    overflow-x: auto;
+    max-width: 100%;
+  }
+
+  .sarva-table > table {
+    min-width: 600px;
+  }
+
+  .sarva-table th,
+  .sarva-table td {
+    white-space: nowrap;
+  }
+
+  form button[type="submit"] {
+    min-height: 44px;
+  }
+
+  textarea {
+    min-height: 96px;
+  }
+
+  /* Mobile dialog behaves as a bottom sheet. */
+  [role="dialog"] > div:last-child {
+    width: 100%;
+    max-height: min(88dvh, 760px);
+    overflow-y: auto;
+    border-radius: 1.5rem 1.5rem 1rem 1rem;
+  }
+}
+
+@media (max-width: 374px) {
+  .sarva-mobile-tab {
+    font-size: 8.5px;
+  }
+
+  .sarva-mobile-bottom-inner {
+    min-height: 62px;
+  }
+
+  .card {
+    padding: 0.875rem;
+  }
+}

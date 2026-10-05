@@ -14,11 +14,11 @@ import { Badge } from './UI';
 export default function TopBar({ title, badge, subtitle, actions, className = '' }) {
   return (
     <div
-      className={`flex flex-col gap-4 pb-5 sm:flex-row sm:items-center sm:justify-between ${className}`}
+      className={`sarva-page-header flex min-w-0 flex-col gap-3 pb-4 sm:gap-4 sm:pb-5 lg:flex-row lg:items-center lg:justify-between ${className}`}
     >
-      <div className="space-y-1">
-        <div className="flex items-center gap-2">
-          <h1 className="font-display text-xl font-semibold sm:text-2xl tracking-tight text-sarva-text">{title}</h1>
+      <div className="min-w-0 space-y-1">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <h1 className="min-w-0 font-display text-xl font-semibold tracking-tight text-sarva-text sm:text-2xl">{title}</h1>
           {badge && (
             <Badge tone="muted">
               {String(badge).toUpperCase()}
@@ -29,7 +29,7 @@ export default function TopBar({ title, badge, subtitle, actions, className = ''
       </div>
 
       {actions && (
-        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
+        <div className="sarva-page-actions flex w-full min-w-0 flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
           {actions}
         </div>
       )}

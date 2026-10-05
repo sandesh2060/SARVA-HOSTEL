@@ -16,7 +16,7 @@ export function Page({ title, subtitle, action, children }) {
 
 export function Card({ title, children, className = '', hover = false }) {
   return (
-    <section className={`card rounded-[1.75rem] bg-sarva-surface p-5 ${hover ? 'card-hover' : ''} ${className}`}>
+    <section className={`card rounded-[1.75rem] bg-sarva-surface p-4 sm:p-5 ${hover ? 'card-hover' : ''} ${className}`}>
       {title && <h2 className="mb-4 font-semibold text-sarva-text">{title}</h2>}
       {children}
     </section>
@@ -84,7 +84,7 @@ export function EntityRow({ avatarUrl, avatarFallback, title, subtitle, meta = [
       tabIndex={onClick ? 0 : undefined}
       onClick={onClick}
       onKeyDown={onClick ? (e) => { if (e.key === 'Enter') onClick(e); } : undefined}
-      className={`flex items-center gap-4 rounded-[1.5rem] bg-sarva-surface p-4 shadow-premium-sm transition ${
+      className={`flex min-w-0 items-center gap-3 rounded-[1.5rem] bg-sarva-surface p-3.5 sm:gap-4 sm:p-4 shadow-premium-sm transition ${
         onClick ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-premium focus:outline-none focus:ring-2 focus:ring-sarva-primary/40' : ''
       }`}
     >
@@ -246,7 +246,7 @@ export function Table({ heads, children }) {
 export function Modal({ open, onClose, title, children, wide = false }) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-[70] flex items-end justify-center p-2 sm:items-center sm:p-4" role="dialog" aria-modal="true">
       <div className="absolute inset-0 bg-black/40 animate-fade-in" onClick={onClose} />
       <div className={`relative z-10 max-h-[90vh] w-full ${wide ? 'max-w-3xl' : 'max-w-lg'} overflow-y-auto rounded-[1.75rem] bg-sarva-surface p-6 shadow-premium animate-fade-in`}>
         <div className="mb-4 flex items-center justify-between">

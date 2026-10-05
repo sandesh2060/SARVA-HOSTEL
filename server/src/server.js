@@ -17,6 +17,7 @@ const admin = require("./routes/adminIntegration");
 const { startBillingJob } = require("./jobs/billing");
 const { startReminderJob } = require("./jobs/reminders");
 const { startLateFeeJob } = require("./jobs/lateFees");
+const mongoose = require("mongoose");
 const app = express();
 app.use(helmet());
 app.use(
@@ -32,8 +33,22 @@ app.use("/api", api);
 app.use("/api", remaining);
 app.use("/api", completion);
 app.use("/integration/sarva", admin);
-app.get("/api/health", (req, res) => res.json({ success: true, service: "SARVA Hostel API" }));
-app.get("/health", (req, res) => res.json({ success: true, service: "SARVA Hostel API" }));
+const health = (req, res) => {
+  const dbState = mongoose.connection.readyState;
+  const database = dbState === 1 ? "connected" : dbState === 2 ? "connecting" : "disconnected";
+  const healthy = dbState === 1;
+  res.set("Cache-Control", "no-store");
+  res.status(healthy ? 200 : 503).json({
+    success: healthy,
+    service: "SARVA Hostel API",
+    status: healthy ? "ok" : "degraded",
+    database,
+    uptimeSeconds: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString(),
+  });
+};
+app.get("/api/health", health);
+app.get("/health", health);
 app.use((e, req, res, next) => {
   console.error(e);
   res.status(e.status || 500).json({ message: e.message || "Server error" });
