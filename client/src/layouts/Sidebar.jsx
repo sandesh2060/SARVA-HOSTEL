@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
 import { useAuth } from '../context/Auth';
 import api from '../services/api';
 import {
   LayoutDashboard, Users, WalletCards, BadgeDollarSign, ReceiptText, Package, BedDouble,
   ClipboardCheck, UserRoundCog, Bell, ChartNoAxesCombined, FileText, Settings, LogOut,
-  CalendarRange, Send, History, Menu, X,
+  CalendarRange, Send, History, Menu, X, Plus, UserPlus, CreditCard,
 } from 'lucide-react';
 
 const groups = [
@@ -140,13 +140,15 @@ function HostelStatusPanel({ caps }) {
 export default function Sidebar() {
   const { hostel, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [quickOpen, setQuickOpen] = useState(false);
   const caps = hostel?.capabilities || [];
   const visibleOf = (items) => items.filter((x) => x[2] === 'dashboard' || caps.includes(x[2]));
 
   // Keep the mobile navigation intentionally small. The most-used hostel
   // workflows stay one tap away; everything else lives in the More sheet.
-  const mobilePrimaryPaths = ['/', '/students', '/payments', '/rooms'];
+  const mobilePrimaryPaths = ['/', '/students', '/payments'];
   const mobilePrimary = visibleOf(allItems).filter((x) => mobilePrimaryPaths.includes(x[0]));
   const mobileMore = visibleOf(allItems).filter((x) => !mobilePrimaryPaths.includes(x[0]));
 
@@ -185,18 +187,26 @@ export default function Sidebar() {
 
       <nav className="sarva-mobile-bottom lg:hidden" aria-label="Mobile navigation">
         <div className="sarva-mobile-bottom-inner">
-          {mobilePrimary.map(([to, label, , Icon]) => (
-            <NavLink
-              end={to === '/'}
-              key={to}
-              to={to}
-              onClick={() => setMobileMenuOpen(false)}
-              className={({ isActive }) => `sarva-mobile-tab ${isActive ? 'is-active' : ''}`}
-            >
-              <span className="sarva-mobile-tab-icon"><Icon size={21} strokeWidth={2.15} /></span>
-              <span>{to === '/' ? 'Home' : label === 'Rooms & Beds' ? 'Rooms' : label}</span>
+          <NavLink end to="/" className={({ isActive }) => `sarva-mobile-tab ${isActive ? 'is-active' : ''}`}>
+            <span className="sarva-mobile-tab-icon"><LayoutDashboard size={21} strokeWidth={2.15} /></span>
+            <span>Home</span>
+          </NavLink>
+          {mobilePrimary.find(([to]) => to === '/students') && (
+            <NavLink to="/students" className={({ isActive }) => `sarva-mobile-tab ${isActive ? 'is-active' : ''}`}>
+              <span className="sarva-mobile-tab-icon"><Users size={21} strokeWidth={2.15} /></span>
+              <span>Students</span>
             </NavLink>
-          ))}
+          )}
+          <button type="button" onClick={() => setQuickOpen(true)} className="sarva-mobile-tab sarva-mobile-tab--quick" aria-label="Open quick actions" aria-expanded={quickOpen}>
+            <span className="sarva-mobile-quick-button"><Plus size={25} strokeWidth={2.4} /></span>
+            <span>Quick</span>
+          </button>
+          {mobilePrimary.find(([to]) => to === '/payments') ? (
+            <NavLink to="/payments" className={({ isActive }) => `sarva-mobile-tab ${isActive ? 'is-active' : ''}`}>
+              <span className="sarva-mobile-tab-icon"><WalletCards size={21} strokeWidth={2.15} /></span>
+              <span>Payments</span>
+            </NavLink>
+          ) : <span />}
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
@@ -209,6 +219,26 @@ export default function Sidebar() {
           </button>
         </div>
       </nav>
+
+
+      {quickOpen && (
+        <div className="fixed inset-0 z-[65] lg:hidden" role="dialog" aria-modal="true" aria-label="Quick actions">
+          <button className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" onClick={() => setQuickOpen(false)} aria-label="Close quick actions" />
+          <div className="sarva-mobile-sheet absolute inset-x-0 bottom-0 bg-white shadow-2xl animate-fade-in">
+            <div className="mx-auto mt-2 h-1.5 w-12 rounded-full bg-sarva-border" />
+            <div className="flex items-center justify-between px-5 pb-3 pt-4">
+              <div><div className="font-display text-lg font-semibold text-sarva-text">Quick actions</div><div className="text-xs text-sarva-muted">Common hostel tasks</div></div>
+              <button onClick={() => setQuickOpen(false)} className="flex h-10 w-10 items-center justify-center rounded-full bg-sarva-bg p-0 text-sarva-muted" aria-label="Close"><X size={19} /></button>
+            </div>
+            <div className="grid grid-cols-2 gap-3 px-4 pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
+              {caps.includes('students') && <button className="sarva-quick-action" onClick={() => { setQuickOpen(false); navigate('/students/new'); }}><UserPlus size={21}/><span><b>Add student</b><small>Create admission</small></span></button>}
+              {caps.includes('payments') && <button className="sarva-quick-action" onClick={() => { setQuickOpen(false); navigate('/payments'); }}><CreditCard size={21}/><span><b>Record payment</b><small>Open payments</small></span></button>}
+              {caps.includes('attendance') && <button className="sarva-quick-action" onClick={() => { setQuickOpen(false); navigate('/attendance'); }}><ClipboardCheck size={21}/><span><b>Attendance</b><small>Mark today</small></span></button>}
+              {caps.includes('expenses') && <button className="sarva-quick-action" onClick={() => { setQuickOpen(false); navigate('/expenses'); }}><ReceiptText size={21}/><span><b>Add expense</b><small>Record spending</small></span></button>}
+            </div>
+          </div>
+        </div>
+      )}
 
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-[60] lg:hidden" role="dialog" aria-modal="true" aria-label="More navigation">

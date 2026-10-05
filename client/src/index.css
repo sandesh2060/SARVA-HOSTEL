@@ -441,3 +441,81 @@ form,
     padding: 0.875rem;
   }
 }
+
+/* ==========================================================================
+   SARVA HOSTEL MOBILE NATIVE SHELL — 2026-10
+   ========================================================================== */
+@media (max-width: 1023px) {
+  .sarva-mobile-bottom-inner {
+    min-height: 72px;
+    border-radius: 24px;
+    padding: 5px 6px 6px;
+  }
+
+  .sarva-mobile-tab { min-height: 58px; }
+
+  .sarva-mobile-tab--quick { overflow: visible; }
+  .sarva-mobile-tab--quick::after { display: none !important; }
+  .sarva-mobile-quick-button {
+    width: 46px;
+    height: 46px;
+    margin-top: -20px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--sarva-primary);
+    color: white;
+    border: 4px solid rgba(255,255,255,.98);
+    box-shadow: 0 10px 24px -10px rgba(92,42,61,.72);
+  }
+  .sarva-mobile-tab--quick > span:last-child { margin-top: -1px; color: var(--sarva-primary); }
+
+  .sarva-mobile-sheet {
+    max-height: min(82dvh, 680px);
+    overflow-y: auto;
+    border-radius: 2rem 2rem 0 0;
+  }
+
+  .sarva-quick-action {
+    min-width: 0;
+    min-height: 78px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px;
+    text-align: left;
+    border: 1px solid var(--sarva-border);
+    border-radius: 18px;
+    background: var(--sarva-bg);
+    color: var(--sarva-primary);
+  }
+  .sarva-quick-action > svg { flex: 0 0 auto; }
+  .sarva-quick-action > span { min-width: 0; display: grid; gap: 2px; }
+  .sarva-quick-action b { color: var(--sarva-text); font-size: 12px; line-height: 1.2; }
+  .sarva-quick-action small { color: var(--sarva-muted); font-size: 10px; line-height: 1.2; }
+}
+
+@media (max-width: 639px) {
+  main { padding-inline: 12px !important; padding-top: 14px !important; }
+  .sarva-page-header { gap: 10px; padding-bottom: 8px; }
+  .sarva-page-header h1 { font-size: clamp(1.25rem, 5.5vw, 1.55rem); line-height: 1.15; }
+  .sarva-page-header p { line-height: 1.45; }
+  .sarva-page-actions { margin-inline: -2px; width: calc(100% + 4px); }
+
+  .card { border-radius: 20px !important; }
+  .grid { min-width: 0; }
+
+  /* KPI cards stay information-dense like a native operations app. */
+  .card .text-2xl, .card .text-3xl { overflow-wrap: anywhere; }
+
+  /* iOS/Android safe interactive sizing without inflating icon-only controls. */
+  input, select, textarea { min-height: 44px; }
+  button:not(.sarva-mobile-tab):not(.sarva-mobile-quick-button) { min-height: 40px; }
+}
+
+@media (max-width: 374px) {
+  .sarva-mobile-bottom { padding-left: 5px; padding-right: 5px; }
+  .sarva-mobile-bottom-inner { border-radius: 21px; padding-inline: 3px; }
+  .sarva-mobile-quick-button { width: 43px; height: 43px; }
+  .sarva-quick-action { padding: 10px; gap: 8px; }
+}
