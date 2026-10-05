@@ -519,3 +519,87 @@ form,
   .sarva-mobile-quick-button { width: 43px; height: 43px; }
   .sarva-quick-action { padding: 10px; gap: 8px; }
 }
+
+/* ==========================================================================
+   SARVA HOSTEL — PROFESSIONAL HOME + BRANDED LOADING SYSTEM
+   ========================================================================== */
+.sarva-boot {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 36%, rgba(214, 173, 96, .14), transparent 28rem),
+    linear-gradient(155deg, #fffaf4 0%, #fff 48%, #f8f1f3 100%);
+  color: var(--sarva-primary);
+}
+.sarva-boot__glow {
+  position: absolute;
+  width: 22rem;
+  height: 22rem;
+  border-radius: 999px;
+  background: rgba(92, 42, 61, .08);
+  filter: blur(70px);
+  animation: sarvaBootGlow 2.4s ease-in-out infinite alternate;
+}
+.sarva-boot__content { position: relative; width: min(82vw, 320px); text-align: center; }
+.sarva-boot__mark {
+  display: grid;
+  place-items: center;
+  width: 88px;
+  height: 88px;
+  margin: 0 auto 18px;
+  border: 1px solid rgba(92, 42, 61, .12);
+  border-radius: 28px;
+  background: rgba(255,255,255,.88);
+  box-shadow: 0 22px 60px -28px rgba(92,42,61,.55);
+}
+.sarva-boot__brand { font-size: 1.45rem; font-weight: 850; letter-spacing: -.035em; }
+.sarva-boot__brand span { color: #b4853d; font-weight: 650; }
+.sarva-boot__content p { margin-top: 7px; font-size: .78rem; color: var(--sarva-muted); }
+.sarva-boot__bar { width: 132px; height: 3px; margin: 22px auto 0; overflow: hidden; border-radius: 999px; background: rgba(92,42,61,.1); }
+.sarva-boot__bar span { display: block; width: 42%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--sarva-primary), #c39a54); animation: sarvaBootBar 1.15s ease-in-out infinite; }
+@keyframes sarvaBootBar { 0% { transform: translateX(-120%); } 50% { transform: translateX(90%); } 100% { transform: translateX(250%); } }
+@keyframes sarvaBootGlow { from { transform: scale(.9); opacity: .65; } to { transform: scale(1.08); opacity: 1; } }
+
+.sarva-dashboard { width: 100%; max-width: 1600px; margin-inline: auto; }
+.sarva-dashboard-welcome {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 24px;
+  border: 1px solid rgba(92,42,61,.11);
+  border-radius: 24px;
+  background: linear-gradient(120deg, rgba(92,42,61,.98), rgba(112,53,74,.94));
+  color: #fff;
+  box-shadow: 0 18px 48px -34px rgba(92,42,61,.72);
+}
+.sarva-dashboard-welcome::after { content: ''; position: absolute; z-index: -1; right: -55px; top: -85px; width: 240px; height: 240px; border-radius: 999px; background: rgba(216,177,104,.18); }
+.sarva-dashboard-welcome__eyebrow { font-size: .68rem; font-weight: 800; letter-spacing: .15em; color: #e8c987; }
+.sarva-dashboard-welcome h2 { margin-top: 5px; font-size: clamp(1.25rem, 2.5vw, 1.8rem); font-weight: 800; letter-spacing: -.035em; }
+.sarva-dashboard-welcome p { margin-top: 5px; max-width: 620px; font-size: .82rem; line-height: 1.5; color: rgba(255,255,255,.72); }
+.sarva-dashboard-welcome__action { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 14px; background: #fff; color: var(--sarva-primary); font-size: .8rem; font-weight: 750; box-shadow: 0 12px 26px -18px #000; transition: transform .18s ease, box-shadow .18s ease; }
+.sarva-dashboard-welcome__action:hover { transform: translateY(-1px); box-shadow: 0 16px 30px -18px #000; }
+
+.sarva-dashboard-skeleton { display: grid; gap: 16px; margin-top: 16px; }
+.sarva-skeleton-block { position: relative; overflow: hidden; border: 1px solid var(--sarva-border); border-radius: 20px; background: rgba(255,255,255,.72); }
+.sarva-skeleton-block::after { content: ''; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, rgba(92,42,61,.055), transparent); animation: sarvaSkeleton 1.35s ease-in-out infinite; }
+@keyframes sarvaSkeleton { to { transform: translateX(100%); } }
+
+@media (max-width: 639px) {
+  .sarva-dashboard { gap: 14px; }
+  .sarva-dashboard-welcome { align-items: stretch; flex-direction: column; gap: 15px; padding: 18px; border-radius: 21px; }
+  .sarva-dashboard-welcome__action { width: 100%; }
+  .sarva-dashboard .mt-6 { margin-top: 1rem; }
+  .sarva-dashboard .mt-4 { margin-top: .75rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sarva-boot__glow, .sarva-boot__bar span, .sarva-skeleton-block::after { animation: none !important; }
+}

@@ -5,6 +5,7 @@ import api from '../services/api';
 import { onDashboardChange } from '../utils/dashboardBus';
 import { Page, Card, KPI, Button, Badge, Empty, Skeleton, Select, Input, Table, money } from '../components/UI';
 import { useAuth } from '../context/Auth';
+import { DashboardHomeSkeleton } from '../components/AppLoader';
 import { Users, Wallet, ReceiptText, PackageSearch, BedDouble, RefreshCw, AlertTriangle, TrendingUp, TrendingDown, Building2, ClipboardList, UserPlus, CreditCard, Boxes, Bell } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -95,7 +96,7 @@ export default function Dashboard() {
   const methods = data?.finance?.paymentMethods || [];
 
   return (
-    <div className="animate-fade-in space-y-6">
+    <div className="sarva-dashboard animate-fade-in space-y-6">
       {/* Header */}
       <TopBar
         title={`${greetingFor(new Date())}, ${user?.name || 'Owner'}`}
@@ -148,6 +149,17 @@ export default function Dashboard() {
         }
       />
 
+      <section className="sarva-dashboard-welcome" aria-label="Dashboard overview">
+        <div>
+          <span className="sarva-dashboard-welcome__eyebrow">HOSTEL OPERATIONS</span>
+          <h2>Everything important, at a glance.</h2>
+          <p>Collections, occupancy, dues and daily operations in one live workspace.</p>
+        </div>
+        <button type="button" onClick={() => navigate('/students/new')} className="sarva-dashboard-welcome__action">
+          <UserPlus size={17} /> Add student
+        </button>
+      </section>
+
       {error && (
         <Card className="mt-4">
           <p className="text-sarva-danger">{error}</p>
@@ -157,13 +169,7 @@ export default function Dashboard() {
         </Card>
       )}
 
-      {loading && !data && (
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <Skeleton key={i} className="h-24 w-full" />
-          ))}
-        </div>
-      )}
+      {loading && !data && <DashboardHomeSkeleton />}
 
       {!error && data && (
         <>
