@@ -16,6 +16,7 @@ const completion = require("./routes/completion");
 const admin = require("./routes/adminIntegration");
 const { startBillingJob } = require("./jobs/billing");
 const { startReminderJob } = require("./jobs/reminders");
+const { startLateFeeJob } = require("./jobs/lateFees");
 const app = express();
 app.use(helmet());
 app.use(
@@ -25,7 +26,9 @@ app.use(
   }),
 );
 app.use(express.json({ limit: "2mb" }));
-app.use("/api", rateLimit({ windowMs: 60000, limit: 300 }), api);
+const apiLimiter = rateLimit({ windowMs: 60000, limit: 300 });
+app.use("/api", apiLimiter);
+app.use("/api", api);
 app.use("/api", remaining);
 app.use("/api", completion);
 app.use("/integration/sarva", admin);
@@ -39,6 +42,7 @@ db()
   .then(() => {
     startBillingJob();
     startReminderJob();
+    startLateFeeJob();
     app.listen(process.env.PORT || 4000, () =>
       console.log(`SARVA Hostel API :${process.env.PORT || 4000}`),
     );

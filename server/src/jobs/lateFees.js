@@ -1,0 +1,1 @@
+const cron=require('node-cron');const {applyLateFeesAll}=require('../services/lateFeeService');exports.startLateFeeJob=()=>cron.schedule('5 0 * * *',()=>applyLateFeesAll().catch(console.error),{timezone:'Asia/Kathmandu'});

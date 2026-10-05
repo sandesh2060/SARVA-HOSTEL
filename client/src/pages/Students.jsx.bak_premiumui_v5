@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { Page, Button, Empty, ErrorState, StatCard, PillTabs } from '../components/UI';
-import StudentCard, { StudentCardSkeleton } from '../components/StudentCard';
+import { Page, Input, Select, Button, Badge, Empty, StatCard, money } from '../components/UI';
 import { useAuth } from '../context/Auth';
 import { Search, Plus, Users, UserCheck, Clock, LogOut as LogOutIcon } from 'lucide-react';
 
@@ -22,10 +21,6 @@ const STATUS_LABEL = {
   checked_out: 'Checked out',
 };
 
-// NOTE: these are the real status values the API returns. No "Outstanding"
-// filter is included here because there is no due-balance field on the
-// student payload yet -- adding one would be fabricated UI per the
-// no-fake-data rule. Wire it in once a real balance/due field exists.
 const STATUS_FILTERS = [
   ['all', 'All'],
   ['active', 'Active'],
@@ -41,13 +36,10 @@ export default function Students() {
 
   const [rows, setRows] = useState([]);
   const [beds, setBeds] = useState([]);
-  const [rooms, setRooms] = useState([]);
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
-  const debounceRef = useRef(null);
 
   const load = useCallback(async (q = '') => {
     setLoading(true);
@@ -62,13 +54,15 @@ export default function Students() {
     }
   }, []);
 
+  const [rooms, setRooms] = useState([]);
+
   const loadRooms = useCallback(async () => {
     try {
       const { data } = await api.get('/rooms/overview');
       setRooms(data.rooms || []);
       setBeds(data.beds || []);
     } catch {
-      // Room management may be disabled -- Room/Bed info simply won't render.
+      // Room management may be disabled -- Room/Bed column simply won't render.
     }
   }, []);
 
@@ -76,16 +70,6 @@ export default function Students() {
     void load();
     void loadRooms();
   }, [load, loadRooms]);
-
-  // Debounced live search, same server-side query as the old submit handler.
-  useEffect(() => {
-    clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      load(query);
-    }, 350);
-    return () => clearTimeout(debounceRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query]);
 
   const roomById = useMemo(() => {
     const map = new Map();
@@ -143,6 +127,8 @@ export default function Students() {
         <StatCard label="Checked out" value={counts.checked_out} icon={LogOutIcon} tone="gold" />
       </div>
 
+      {/* Pill-shaped floating search bar (search + filter + gold action all
+          inside one rounded-full capsule) instead of a boxed form card. */}
       <form
         onSubmit={(e) => { e.preventDefault(); load(query); }}
         className="mt-4 flex flex-col gap-2 rounded-full bg-sarva-surface p-2 shadow-premium-sm sm:flex-row sm:items-center"
@@ -156,24 +142,33 @@ export default function Students() {
             className="w-full rounded-full bg-transparent py-2.5 pl-11 pr-4 text-sm outline-none placeholder:text-sarva-muted"
           />
         </div>
+
+        <div className="hidden h-8 w-px bg-sarva-border sm:block" />
+
+        <div className="px-1 sm:w-48">
+          <Select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="!rounded-full !border-none !bg-sarva-bg"
+          >
+            {STATUS_FILTERS.map(([v, l]) => (
+              <option key={v} value={v}>{l}</option>
+            ))}
+          </Select>
+        </div>
+
         <Button type="submit" variant="gold" className="sm:px-6">
           <Search size={15} /> Search
         </Button>
       </form>
 
-      <div className="mt-4">
-        <PillTabs options={STATUS_FILTERS} value={statusFilter} onChange={setStatusFilter} />
-      </div>
-
+      {/* Results: floats directly on the page background -- no outer boxed
+          wrapper, so empty grid space never reads as a bounded dead void. */}
       <div className="mt-6">
-        {error ? (
-          <ErrorState message={error} onRetry={() => load(query)} />
-        ) : loading ? (
-          <div className="grid grid-cols-1 items-start gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <StudentCardSkeleton key={i} />
-            ))}
-          </div>
+        {error && <div className="mb-4 rounded-2xl bg-rose-50 p-4 text-sm text-sarva-danger">{error}</div>}
+
+        {loading ? (
+          <div className="py-8 text-center text-sm text-sarva-muted">Loading\u2026</div>
         ) : !filtered.length ? (
           rows.length ? (
             <Empty>No students match your search.</Empty>
@@ -187,29 +182,74 @@ export default function Students() {
             </div>
           )
         ) : (
-          <>
-            <div className="mb-3 px-1 text-xs font-semibold uppercase tracking-wider text-sarva-muted">
-              Students ({filtered.length})
-            </div>
-            <div className="grid grid-cols-1 items-start gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filtered.map((s) => {
-                const bed = bedByStudent.get(s._id);
-                const feeAmount = Number(s.monthlyFee?.$numberDecimal ?? s.monthlyFee ?? 0);
-                const roomText = bed ? roomLabel(bed) : 'Not assigned';
-                return (
-                  <StudentCard
-                    key={s._id}
-                    student={s}
-                    roomText={roomText}
-                    feeAmount={feeAmount}
-                    currency={hostel?.currency || 'NPR'}
-                    status={{ tone: STATUS_TONE[s.status] || 'muted', label: STATUS_LABEL[s.status] || s.status }}
-                    onClick={() => openStudent(s._id)}
-                  />
-                );
-              })}
-            </div>
-          </>
+          <div
+            className="grid gap-6"
+            style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 260px))' }}
+          >
+            {filtered.map((s) => {
+              const bed = bedByStudent.get(s._id);
+              const fee = money(s.monthlyFee?.$numberDecimal ?? s.monthlyFee, hostel?.currency || 'NPR');
+              const roomText = bed ? roomLabel(bed) : 'Not assigned';
+              return (
+                <div
+                  key={s._id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => openStudent(s._id)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') openStudent(s._id); }}
+                  className="group cursor-pointer overflow-hidden rounded-[1.75rem] bg-sarva-surface shadow-premium-sm transition hover:-translate-y-1 hover:shadow-premium focus:outline-none focus:ring-2 focus:ring-sarva-primary/40"
+                >
+                  <div className="relative aspect-[3/4] w-full overflow-hidden bg-gradient-to-br from-sarva-primarySoft to-sarva-goldSoft">
+                    {s.photo?.url ? (
+                      <img
+                        src={s.photo.url}
+                        alt={s.name}
+                        className="absolute inset-0 h-full w-full object-cover object-top"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-sarva-primary to-sarva-primaryDark">
+                        <span className="font-display text-6xl font-semibold text-white/90">
+                          {s.name?.[0]?.toUpperCase() || '?'}
+                        </span>
+                      </div>
+                    )}
+                    <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
+
+                    <span className="absolute right-3 top-3">
+                      <Badge tone={STATUS_TONE[s.status] || 'muted'}>{STATUS_LABEL[s.status] || s.status}</Badge>
+                    </span>
+
+                    <div className="absolute inset-x-0 bottom-0 p-4">
+                      <div className="font-display text-lg font-semibold leading-tight text-white">{s.name}</div>
+                      <div className="text-xs tracking-wide text-white/70">{s.studentCode}</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <div>
+                      <div className="text-sm font-bold text-sarva-text">{fee}</div>
+                      <div className="text-[11px] text-sarva-muted">Monthly fee</div>
+                    </div>
+                    <div className="sarva-soft-divider h-8 w-px" />
+                    <div className="text-right">
+                      <div className="max-w-[110px] truncate text-sm font-bold text-sarva-text">{roomText}</div>
+                      <div className="text-[11px] text-sarva-muted">Room</div>
+                    </div>
+                  </div>
+
+                  <div className="px-4 pb-4">
+                    <Button
+                      variant="gold"
+                      className="w-full"
+                      onClick={(e) => { e.stopPropagation(); openStudent(s._id); }}
+                    >
+                      View Profile
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
     </Page>

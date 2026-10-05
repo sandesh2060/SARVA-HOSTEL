@@ -18,18 +18,18 @@ export default function TopBar({ title, badge, subtitle, actions, className = ''
     >
       <div className="space-y-1">
         <div className="flex items-center gap-2">
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-sarva-text">{title}</h1>
+          <h1 className="font-display text-xl font-semibold sm:text-2xl tracking-tight text-sarva-text">{title}</h1>
           {badge && (
             <Badge tone="muted">
               {String(badge).toUpperCase()}
             </Badge>
           )}
         </div>
-        {subtitle && <p className="text-sm text-sarva-muted">{subtitle}</p>}
+        {subtitle && <p className="max-w-2xl text-xs leading-relaxed text-sarva-muted sm:text-sm">{subtitle}</p>}
       </div>
 
       {actions && (
-        <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
           {actions}
         </div>
       )}
