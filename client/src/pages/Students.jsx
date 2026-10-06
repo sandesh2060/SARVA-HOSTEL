@@ -49,6 +49,8 @@ export default function Students() {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [inviteInfo, setInviteInfo] = useState(null);
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteError, setInviteError] = useState('');
 
   const debounceRef = useRef(null);
 
@@ -130,12 +132,18 @@ export default function Students() {
   const openStudent = (id) => nav(`/students/${id}`);
 
   const openInvitation = async () => {
+    if (inviteLoading) return;
+    setInviteLoading(true);
+    setInviteError('');
     try {
       const { data } = await api.get('/public-admission/settings');
       setInviteInfo(data);
-      setInviteOpen(true);
     } catch (e) {
-      setError(e.response?.data?.message || 'Could not load the student invitation link.');
+      setInviteInfo(null);
+      setInviteError(e.response?.data?.message || 'Could not load the student invitation link.');
+    } finally {
+      setInviteOpen(true);
+      setInviteLoading(false);
     }
   };
 
@@ -179,8 +187,8 @@ export default function Students() {
       subtitle="Manage hostel students and records."
       action={
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <Button variant="ghost" onClick={openInvitation}>
-            <Send size={16} /> Send Invitation
+          <Button variant="ghost" onClick={openInvitation} disabled={inviteLoading}>
+            <Send size={16} /> {inviteLoading ? 'Preparing…' : 'Send Invitation'}
           </Button>
           <Button variant="gold" onClick={() => nav('/students/new')}>
             <Plus size={16} /> Add Student
@@ -264,6 +272,34 @@ export default function Students() {
           </>
         )}
       </div>
+
+      {inviteOpen && (
+        <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/40 backdrop-blur-[2px] sm:items-center sm:p-4" onMouseDown={(e) => e.target === e.currentTarget && setInviteOpen(false)}>
+          <section role="dialog" aria-modal="true" aria-labelledby="student-invitation-title" className="w-full rounded-t-[28px] bg-white p-5 shadow-2xl sm:max-w-lg sm:rounded-[28px] sm:p-6" style={{ paddingBottom: 'max(20px, env(safe-area-inset-bottom))' }}>
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-sarva-primarySoft text-sarva-primary"><Send size={19} /></span>
+                <div className="min-w-0"><h2 id="student-invitation-title" className="font-display text-lg font-bold text-sarva-text">Send Student Invitation</h2><p className="mt-1 text-xs leading-5 text-sarva-muted">Share the admission form. The student remains pending until you approve the request.</p></div>
+              </div>
+              <button type="button" onClick={() => setInviteOpen(false)} aria-label="Close invitation" className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-sarva-bg text-sarva-muted"><X size={18} /></button>
+            </div>
+            {inviteError ? (
+              <div className="mt-5 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">{inviteError}</div>
+            ) : (
+              <>
+                {!inviteInfo?.enabled && <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">Public admission is disabled. Enable it in Settings before sharing the link.</div>}
+                <div className="mt-4 rounded-2xl border border-sarva-border bg-sarva-bg p-4"><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-sarva-muted">Public student admission link</p><p className="mt-2 break-all text-sm font-medium leading-6 text-sarva-text">{invitationUrl || 'No public link is available.'}</p></div>
+                <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                  <Button onClick={shareInvitation} disabled={!invitationUrl || !inviteInfo?.enabled}><Share2 size={16} /> Share</Button>
+                  <Button variant="ghost" onClick={copyInvitation} disabled={!invitationUrl || !inviteInfo?.enabled}>{copied ? <Check size={16} /> : <Copy size={16} />}{copied ? 'Copied' : 'Copy Link'}</Button>
+                  <Button variant="ghost" onClick={openPublicForm} disabled={!invitationUrl || !inviteInfo?.enabled}><ExternalLink size={16} /> Open Form</Button>
+                </div>
+              </>
+            )}
+            <Button variant="gold" className="mt-3 w-full" onClick={() => nav('/admissions')}>Review Admission Requests</Button>
+          </section>
+        </div>
+      )}
     </Page>
   );
 }

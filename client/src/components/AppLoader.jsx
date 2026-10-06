@@ -1,32 +1,16 @@
 import SarvaMark from './SarvaMark';
 
-export function AppLoader({
-  message = 'Preparing your hostel...',
-}) {
+export function AppLoader({ message = 'Preparing your hostel...' }) {
   return (
-    <div
-      className="sarva-app-loader"
-      role="status"
-      aria-live="polite"
-      aria-label={message}
-    >
-      <div className="sarva-app-loader__glow" aria-hidden="true" />
-
-      <div className="sarva-app-loader__content">
-        <div className="sarva-app-loader__mark" aria-hidden="true">
-          <SarvaMark />
-        </div>
-
-        <div className="sarva-app-loader__brand">
-          <h1>SARVA Hostel</h1>
-          <p>Hostel Management System</p>
-        </div>
-
-        <div className="sarva-app-loader__progress" aria-hidden="true">
-          <span />
-        </div>
-
-        <p className="sarva-app-loader__message">{message}</p>
+    <div className="sarva-boot" role="status" aria-live="polite" aria-label={message}>
+      <div className="sarva-boot__glow" aria-hidden="true" />
+      <div className="sarva-boot__content">
+        <div className="sarva-boot__mark" aria-hidden="true"><span className="sarva-boot__ring sarva-boot__ring--outer" /><span className="sarva-boot__ring sarva-boot__ring--inner" /><div className="sarva-boot__logo"><SarvaMark /></div></div>
+        <div className="sarva-boot__brand">SARVA <span>Hostel</span></div>
+        <p className="sarva-boot__tagline">Hostel Management System</p>
+        <div className="sarva-boot__bar" aria-hidden="true"><span /></div>
+        <p className="sarva-boot__message">{message}</p>
+        <div className="sarva-boot__dots" aria-hidden="true"><i /><i /><i /></div>
       </div>
     </div>
   );

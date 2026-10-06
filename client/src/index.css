@@ -603,3 +603,23 @@ form,
 @media (prefers-reduced-motion: reduce) {
   .sarva-boot__glow, .sarva-boot__bar span, .sarva-skeleton-block::after { animation: none !important; }
 }
+
+
+/* SARVA professional boot animation */
+.sarva-boot__content { width: min(84vw, 340px); animation: sarvaBootEnter .5s cubic-bezier(.2,.8,.2,1) both; }
+.sarva-boot__mark { position: relative; width: 96px; height: 96px; border: 0; background: transparent; box-shadow: none; }
+.sarva-boot__logo { position: relative; z-index: 2; display: grid; place-items: center; width: 76px; height: 76px; padding: 16px; border: 1px solid rgba(92,42,61,.12); border-radius: 25px; background: rgba(255,255,255,.95); box-shadow: 0 24px 58px -26px rgba(92,42,61,.62); animation: sarvaBootLogo 1.8s ease-in-out infinite; }
+.sarva-boot__logo svg { width: 100%; height: 100%; }
+.sarva-boot__ring { position: absolute; inset: 0; border: 1px solid rgba(180,133,61,.34); border-radius: 31px; animation: sarvaBootRing 2.2s ease-out infinite; }
+.sarva-boot__ring--inner { inset: 7px; border-color: rgba(92,42,61,.18); animation-delay: .7s; }
+.sarva-boot__tagline { margin-top: 7px !important; font-size: .76rem !important; letter-spacing: .02em; }
+.sarva-boot__message { margin-top: 11px !important; font-size: .72rem !important; font-weight: 650; }
+.sarva-boot__dots { display: flex; justify-content: center; gap: 5px; margin-top: 10px; }
+.sarva-boot__dots i { width: 4px; height: 4px; border-radius: 999px; background: var(--sarva-primary); opacity: .3; animation: sarvaBootDot 1.2s ease-in-out infinite; }
+.sarva-boot__dots i:nth-child(2) { animation-delay: .15s; }
+.sarva-boot__dots i:nth-child(3) { animation-delay: .3s; }
+@keyframes sarvaBootEnter { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes sarvaBootLogo { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-3px) scale(1.025); } }
+@keyframes sarvaBootRing { 0% { transform: scale(.82); opacity: 0; } 30% { opacity: .8; } 100% { transform: scale(1.18); opacity: 0; } }
+@keyframes sarvaBootDot { 0%,100% { transform: translateY(0); opacity: .25; } 50% { transform: translateY(-3px); opacity: .9; } }
+@media (prefers-reduced-motion: reduce) { .sarva-boot__content, .sarva-boot__logo, .sarva-boot__ring, .sarva-boot__dots i { animation: none !important; } }
