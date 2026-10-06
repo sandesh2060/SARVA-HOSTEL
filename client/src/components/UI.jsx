@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useId } from 'react';
 import { ChevronDown, ChevronRight, RefreshCw, X } from 'lucide-react';
 import TopBar from './TopBar';
 
@@ -244,19 +244,83 @@ export function Table({ heads, children }) {
 }
 
 export function Modal({ open, onClose, title, children, wide = false }) {
+  const titleId = useId();
+
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const oldOverflow = document.body.style.overflow;
+    const oldPaddingRight = document.body.style.paddingRight;
+    const scrollbarWidth =
+      window.innerWidth - document.documentElement.clientWidth;
+
+    document.body.style.overflow = 'hidden';
+
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') onClose?.();
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = oldOverflow;
+      document.body.style.paddingRight = oldPaddingRight;
+    };
+  }, [open, onClose]);
+
   if (!open) return null;
+
   return (
-    <div className="fixed inset-0 z-[70] flex items-end justify-center p-2 sm:items-center sm:p-4" role="dialog" aria-modal="true">
-      <div className="absolute inset-0 bg-black/40 animate-fade-in" onClick={onClose} />
-      <div className={`relative z-10 max-h-[90vh] w-full ${wide ? 'max-w-3xl' : 'max-w-lg'} overflow-y-auto rounded-[1.75rem] bg-sarva-surface p-6 shadow-premium animate-fade-in`}>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-display text-lg font-semibold text-sarva-text">{title}</h2>
-          <button type="button" onClick={onClose} className="rounded-full p-2 text-sarva-muted hover:bg-sarva-primarySoft hover:text-sarva-primary">
-            <X size={18} />
+    <div
+      className="fixed inset-0 z-[100] flex h-[100dvh] w-screen items-center justify-center overflow-hidden p-3 sm:p-5 lg:p-6"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={title ? titleId : undefined}
+    >
+      <button
+        type="button"
+        aria-label="Close dialog"
+        onClick={onClose}
+        className="absolute inset-0 h-full w-full cursor-default bg-[#1f1017]/50 backdrop-blur-md backdrop-saturate-150 animate-fade-in"
+      />
+
+      <section
+        className={`relative z-10 flex w-full flex-col overflow-hidden border border-white/70 bg-sarva-surface shadow-[0_28px_90px_rgba(38,15,25,.30)] animate-fade-in
+          ${wide ? 'max-w-5xl' : 'max-w-xl'}
+          max-h-[calc(100dvh-1.5rem)] rounded-[1.5rem]
+          sm:max-h-[calc(100dvh-2.5rem)] sm:rounded-[1.75rem]`}
+      >
+        <header className="flex shrink-0 items-center justify-between gap-4 border-b border-sarva-border bg-sarva-surface/95 px-4 py-3.5 backdrop-blur sm:px-6 sm:py-4">
+          <div className="min-w-0">
+            {title && (
+              <h2
+                id={titleId}
+                className="truncate font-display text-lg font-semibold text-sarva-text sm:text-xl"
+              >
+                {title}
+              </h2>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-transparent text-sarva-muted transition hover:border-sarva-border hover:bg-sarva-primarySoft hover:text-sarva-primary focus:outline-none focus:ring-2 focus:ring-sarva-primary/30"
+          >
+            <X size={19} />
           </button>
+        </header>
+
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 [scrollbar-gutter:stable] sm:px-6 sm:py-5">
+          {children}
         </div>
-        {children}
-      </div>
+      </section>
     </div>
   );
 }
