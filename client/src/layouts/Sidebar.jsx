@@ -6,7 +6,7 @@ import api from '../services/api';
 import {
   LayoutDashboard, Users, WalletCards, BadgeDollarSign, ReceiptText, Package, BedDouble,
   ClipboardCheck, UserRoundCog, Bell, ChartNoAxesCombined, FileText, Settings, LogOut,
-  CalendarRange, Send, History, Menu, X, Plus, UserPlus, CreditCard,
+  CalendarRange, Send, History, Menu, X, Plus, UserPlus, CreditCard, Inbox,
 } from 'lucide-react';
 
 const groups = [
@@ -15,6 +15,7 @@ const groups = [
   ]},
   { label: 'People', items: [
     ['/students', 'Students', 'students', Users],
+    ['/admissions', 'Admission Requests', 'students', Inbox],
     ['/staff', 'Staff', 'staff', UserRoundCog],
     ['/attendance', 'Attendance', 'attendance', ClipboardCheck],
   ]},
