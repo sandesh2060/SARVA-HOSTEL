@@ -15,7 +15,35 @@ export default function AdmissionRequests(){
   useEffect(()=>{load().catch(e=>setError(e.response?.data?.message||e.message))},[status]);
   useEffect(()=>{api.get('/rooms/overview').then(r=>{setRooms(r.data.rooms||[]);setBeds(r.data.beds||[])}).catch(()=>{})},[]);
   useEffect(()=>{const key=e=>{if(e.key==='Escape')setPreview(null)};window.addEventListener('keydown',key);return()=>window.removeEventListener('keydown',key)},[]);
-  const available=useMemo(()=>beds.filter(b=>b.status==='available'&&!b.studentId),[beds]);
+  const available=useMemo(()=>{
+    const floorRank=value=>{
+      const text=String(value||'').trim().toLowerCase();
+      if(text==='ground'||text==='ground floor'||text==='g')return 0;
+      const n=Number(text.match(/\d+/)?.[0]);
+      return Number.isFinite(n)?n+1:999;
+    };
+    const natural=(a,b)=>String(a||'').localeCompare(String(b||''),undefined,{numeric:true,sensitivity:'base'});
+    return beds
+      .filter(b=>b.status==='available'&&!b.studentId)
+      .map(b=>({bed:b,room:rooms.find(r=>String(r._id)===String(b.roomId?._id||b.roomId))}))
+      .sort((a,b)=>
+        natural(a.room?.building,b.room?.building)||
+        floorRank(a.room?.floor)-floorRank(b.room?.floor)||
+        natural(a.room?.name,b.room?.name)||
+        natural(a.bed?.label,b.bed?.label)
+      );
+  },[beds,rooms]);
+  const floorLabel=value=>{
+    const text=String(value||'').trim();
+    if(!text)return 'Floor not set';
+    if(/^(ground|ground floor|g)$/i.test(text))return 'Ground Floor';
+    return /^floor\b/i.test(text)?text:`Floor ${text}`;
+  };
+  const bedLabel=value=>{
+    const text=String(value||'').trim();
+    if(!text)return 'Bed';
+    return /^bed\b/i.test(text)?text:`Bed ${text}`;
+  };
   async function approve(){if(!selected)return;setBusy(true);setError('');try{const{data}=await api.post(`/admission-requests/${selected._id}/approve`,{bedId:bedId||undefined,monthlyFee:Number(fee),admissionDate});setSelected(null);await load();nav(`/students/${data.studentId}`)}catch(e){setError(e.response?.data?.message||e.message)}finally{setBusy(false)}}
   async function reject(){if(!selected)return;setBusy(true);try{await api.post(`/admission-requests/${selected._id}/reject`,{reason:'Rejected by hostel owner'});setSelected(null);await load()}catch(e){setError(e.response?.data?.message||e.message)}finally{setBusy(false)}}
   const openRequest=r=>{setSelected(r);setFee('');setBedId('');setAdmissionDate((r.requestedMoveInDate||new Date().toISOString()).slice(0,10))};
@@ -47,7 +75,7 @@ export default function AdmissionRequests(){
             <section className="overflow-hidden rounded-[22px] border border-sarva-border bg-white shadow-sm"><div className="flex items-center justify-between border-b border-sarva-border bg-sarva-bg/60 px-4 py-3.5"><div><h3 className="font-bold text-sarva-text">Documents & verification</h3><p className="mt-0.5 text-[11px] text-sarva-muted">Tap any document to inspect the full original.</p></div><span className="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-sarva-muted shadow-sm">{selected.documents?.length||0} files</span></div><div className="p-4">
               {selected.documents?.length?<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">{selected.documents.map((d,i)=><DocumentCard key={d._id||i} doc={d} onPreview={()=>setPreview({url:docUrl(d),label:d.label||pretty(d.type),image:!isPdf(d)})}/>)}</div>:<div className="rounded-xl bg-sarva-bg p-4 text-sm text-sarva-muted">No documents were submitted.</div>}</div>
             </section>
-            {['pending','under_review'].includes(selected.status)&&<section className="rounded-2xl border border-sarva-border bg-white p-4 shadow-sm"><div className="mb-4"><h3 className="font-bold text-sarva-text">Admission setup</h3><p className="mt-1 text-xs leading-5 text-sarva-muted">Confirm rent and admission details before creating the student record.</p></div><div className="grid gap-3"><label className="grid gap-1 text-sm font-medium">Monthly rent *<Input type="number" min="0" value={fee} onChange={e=>setFee(e.target.value)}/></label><label className="grid gap-1 text-sm font-medium">Admission date *<Input type="date" value={admissionDate} onChange={e=>setAdmissionDate(e.target.value)}/></label><label className="grid gap-1 text-sm font-medium">Assign available bed <span className="text-xs font-normal text-sarva-muted">(optional)</span><Select value={bedId} onChange={e=>setBedId(e.target.value)}><option value="">No bed yet</option>{available.map(b=>{const room=rooms.find(r=>r._id===(b.roomId?._id||b.roomId));return <option key={b._id} value={b._id}>{room?.name||'Room'} · Bed {b.label}</option>})}</Select></label></div>{!canApprove&&<p className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-800">Enter the monthly rent and admission date to enable approval.</p>}<div className="mt-4 hidden gap-2 sm:flex sm:justify-end"><Button variant="danger" disabled={busy} onClick={reject}><XCircle size={16}/> Reject</Button><Button loading={busy} disabled={!canApprove} onClick={approve}><CheckCircle2 size={16}/> Approve Student</Button></div></section>}
+            {['pending','under_review'].includes(selected.status)&&<section className="rounded-2xl border border-sarva-border bg-white p-4 shadow-sm"><div className="mb-4"><h3 className="font-bold text-sarva-text">Admission setup</h3><p className="mt-1 text-xs leading-5 text-sarva-muted">Confirm rent and admission details before creating the student record.</p></div><div className="grid gap-3"><label className="grid gap-1 text-sm font-medium">Monthly rent *<Input type="number" min="0" value={fee} onChange={e=>setFee(e.target.value)}/></label><label className="grid gap-1 text-sm font-medium">Admission date *<Input type="date" value={admissionDate} onChange={e=>setAdmissionDate(e.target.value)}/></label><label className="grid gap-1 text-sm font-medium">Assign available bed <span className="text-xs font-normal text-sarva-muted">(optional)</span><Select value={bedId} onChange={e=>setBedId(e.target.value)}><option value="">No bed yet</option>{available.map(({bed,room})=><option key={bed._id} value={bed._id}>{`${room?.building||'Building not set'} • ${floorLabel(room?.floor)} • Room ${room?.name||'—'} • ${bedLabel(bed.label)}`}</option>)}</Select></label></div>{!canApprove&&<p className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-800">Enter the monthly rent and admission date to enable approval.</p>}<div className="mt-4 hidden gap-2 sm:flex sm:justify-end"><Button variant="danger" disabled={busy} onClick={reject}><XCircle size={16}/> Reject</Button><Button loading={busy} disabled={!canApprove} onClick={approve}><CheckCircle2 size={16}/> Approve Student</Button></div></section>}
           </div>
         </div>
 
