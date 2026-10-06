@@ -176,8 +176,8 @@ export default function Sidebar() {
       </aside>
 
       {/* Mobile brand bar. Navigation is at thumb level in the bottom bar. */}
-      <div className="sticky top-0 z-30 border-b border-white/10 bg-sarva-primary px-4 py-2.5 text-white lg:hidden">
-        <div className="mx-auto flex max-w-lg items-center justify-between">
+      <div className="sarva-mobile-brandbar sticky top-0 z-30 border-b border-white/10 bg-sarva-primary px-4 text-white lg:hidden">
+        <div className="mx-auto flex min-h-[58px] max-w-lg items-center justify-between">
           <Logo size={27} />
           <div className="min-w-0 pl-3 text-right">
             <div className="max-w-[180px] truncate text-xs font-semibold">{hostel?.name || 'SARVA Hostel'}</div>

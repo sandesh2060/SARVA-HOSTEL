@@ -160,19 +160,16 @@ export const Select = ({ className = '', ...p }) => (
 
 export function PillTabs({ options, value, onChange }) {
   return (
-    <div className="flex flex-wrap gap-2">
-      {options.map(([v, label]) => (
+    <div className="sarva-pill-tabs no-scrollbar flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
+      {options.map(([v, label, Icon]) => (
         <button
           key={v}
           type="button"
           onClick={() => onChange(v)}
-          className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-wide transition ${
-            value === v
-              ? 'bg-sarva-primary text-white shadow-premium-sm'
-              : 'bg-sarva-bg text-sarva-muted hover:bg-sarva-primarySoft hover:text-sarva-primary'
-          }`}
+          className={`sarva-pill-tab ${value === v ? 'is-active' : ''}`}
         >
-          {label}
+          {Icon && <span className="sarva-pill-tab-icon"><Icon size={15} strokeWidth={2.15} /></span>}
+          <span>{label}</span>
         </button>
       ))}
     </div>

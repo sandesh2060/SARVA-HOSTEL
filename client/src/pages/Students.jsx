@@ -4,7 +4,7 @@ import api from '../services/api';
 import { Page, Button, Empty, ErrorState, StatCard, PillTabs } from '../components/UI';
 import StudentCard, { StudentCardSkeleton } from '../components/StudentCard';
 import { useAuth } from '../context/Auth';
-import { Search, Plus, Users, UserCheck, Clock, LogOut as LogOutIcon, Send, Copy, ExternalLink, Share2, X, Check } from 'lucide-react';
+import { Search, Plus, Users, UserCheck, Clock, LogOut as LogOutIcon, Send, Copy, ExternalLink, Share2, X, Check, UserRound, PauseCircle, Ban } from 'lucide-react';
 
 const STATUS_TONE = {
   active: 'success',
@@ -27,12 +27,12 @@ const STATUS_LABEL = {
 // student payload yet -- adding one would be fabricated UI per the
 // no-fake-data rule. Wire it in once a real balance/due field exists.
 const STATUS_FILTERS = [
-  ['all', 'All'],
-  ['active', 'Active'],
-  ['on_leave', 'On leave'],
-  ['on_hold', 'On hold'],
-  ['suspended', 'Suspended'],
-  ['checked_out', 'Checked out'],
+  ['all', 'All', Users],
+  ['active', 'Active', UserCheck],
+  ['on_leave', 'On leave', Clock],
+  ['on_hold', 'On hold', PauseCircle],
+  ['suspended', 'Suspended', Ban],
+  ['checked_out', 'Checked out', LogOutIcon],
 ];
 
 export default function Students() {

@@ -53,11 +53,10 @@ export default function StudentCard({ student, roomText, feeAmount, currency = '
         }
       }}
       aria-label={`Open profile for ${student.name}`}
-      className="card-hover group relative w-full self-start overflow-hidden rounded-[1.75rem] cursor-pointer
+      className="sarva-student-card card-hover group relative w-full self-start overflow-hidden rounded-[1.75rem] cursor-pointer
                  shadow-[0_1px_2px_rgba(36,19,24,0.04),0_24px_48px_-20px_rgba(36,19,24,0.18)]
                  outline-none focus-visible:ring-2 focus-visible:ring-sarva-gold focus-visible:ring-offset-2
                  transition-transform duration-200"
-      style={{ aspectRatio: '0.7' }}
     >
       {/* Photo / fallback background -- always fills the full card */}
       <div className="absolute inset-0">
@@ -141,6 +140,6 @@ export default function StudentCard({ student, roomText, feeAmount, currency = '
 
 export function StudentCardSkeleton() {
   return (
-    <div className="skeleton relative w-full self-start overflow-hidden rounded-[1.75rem]" style={{ aspectRatio: '0.7' }} />
+    <div className="sarva-student-card skeleton relative w-full self-start overflow-hidden rounded-[1.75rem]" />
   );
 }
