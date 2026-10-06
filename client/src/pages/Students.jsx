@@ -4,7 +4,7 @@ import api from '../services/api';
 import { Page, Button, Empty, ErrorState, StatCard, PillTabs } from '../components/UI';
 import StudentCard, { StudentCardSkeleton } from '../components/StudentCard';
 import { useAuth } from '../context/Auth';
-import { Search, Plus, Users, UserCheck, Clock, LogOut as LogOutIcon } from 'lucide-react';
+import { Search, Plus, Users, UserCheck, Clock, LogOut as LogOutIcon, Send, Copy, ExternalLink, Share2, X, Check } from 'lucide-react';
 
 const STATUS_TONE = {
   active: 'success',
@@ -46,6 +46,9 @@ export default function Students() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [inviteInfo, setInviteInfo] = useState(null);
 
   const debounceRef = useRef(null);
 
@@ -126,14 +129,63 @@ export default function Students() {
 
   const openStudent = (id) => nav(`/students/${id}`);
 
+  const openInvitation = async () => {
+    try {
+      const { data } = await api.get('/public-admission/settings');
+      setInviteInfo(data);
+      setInviteOpen(true);
+    } catch (e) {
+      setError(e.response?.data?.message || 'Could not load the student invitation link.');
+    }
+  };
+
+  const invitationUrl = inviteInfo?.publicUrl || '';
+
+  const copyInvitation = async () => {
+    if (!invitationUrl) return;
+    try {
+      await navigator.clipboard.writeText(invitationUrl);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      // The visible link remains selectable when clipboard access is unavailable.
+    }
+  };
+
+  const shareInvitation = async () => {
+    if (!invitationUrl) return;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${hostel?.name || 'Hostel'} student admission`,
+          text: `Please complete your student admission request for ${hostel?.name || 'the hostel'}.`,
+          url: invitationUrl,
+        });
+        return;
+      } catch (e) {
+        if (e?.name === 'AbortError') return;
+      }
+    }
+    await copyInvitation();
+  };
+
+  const openPublicForm = () => {
+    if (invitationUrl) window.open(invitationUrl, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <Page
       title="Students"
       subtitle="Manage hostel students and records."
       action={
-        <Button variant="gold" onClick={() => nav('/students/new')}>
-          <Plus size={16} /> Add Student
-        </Button>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <Button variant="ghost" onClick={openInvitation}>
+            <Send size={16} /> Send Invitation
+          </Button>
+          <Button variant="gold" onClick={() => nav('/students/new')}>
+            <Plus size={16} /> Add Student
+          </Button>
+        </div>
       }
     >
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

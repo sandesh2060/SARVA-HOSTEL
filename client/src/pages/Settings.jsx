@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
 import { Page, Card, Input, Select, Button, Switch, PillTabs } from '../components/UI';
-import { Building2, QrCode, Nfc, Fingerprint } from 'lucide-react';
+import { Building2, QrCode, Nfc, Fingerprint, Copy, ExternalLink, ClipboardList } from 'lucide-react';
 
 const TABS = [
   ['profile', 'Hostel Profile'],
   ['regional', 'Regional & Billing'],
   ['payments', 'Payment Methods'],
   ['attendance', 'Attendance Methods'],
+  ['admission', 'Public Admission'],
 ];
 
 const TIMEZONES = ['Asia/Kathmandu', 'Asia/Kolkata', 'Asia/Dhaka', 'Asia/Dubai', 'UTC'];
@@ -43,6 +44,8 @@ export default function Settings() {
         payManualQr: h.settings?.paymentMethods?.manualQr ?? true,
         payEsewa: h.settings?.paymentMethods?.esewa ?? false,
         manualQrImage: h.settings?.manualQrImage || '',
+        publicAdmissionEnabled: h.settings?.publicAdmissionEnabled ?? false,
+        publicSlug: h.slug || '',
         attManual: h.settings?.attendanceMethods?.manual ?? true,
         attQr: h.settings?.attendanceMethods?.qr ?? false,
         attNfc: h.settings?.attendanceMethods?.nfc ?? false,
@@ -109,6 +112,7 @@ export default function Settings() {
           timezone: f.timezone,
           paymentMethods: { cash: f.payCash, manualQr: f.payManualQr, esewa: f.payEsewa },
           manualQrImage: f.manualQrImage,
+          publicAdmissionEnabled: f.publicAdmissionEnabled,
           attendanceMethods: {
             manual: f.attManual,
             qr: f.attQr,
@@ -135,6 +139,27 @@ export default function Settings() {
       <PillTabs options={TABS} value={tab} onChange={setTab} />
 
       <div className="mt-6 max-w-3xl space-y-6">
+        {tab === 'admission' && (() => {
+          const publicUrl = `${window.location.origin}/join/${f.publicSlug}`;
+          return (
+            <Card title="Public Student Admission">
+              <div className="space-y-5">
+                <Switch checked={f.publicAdmissionEnabled} onChange={toggle('publicAdmissionEnabled')} label="Accept public admission requests" help="Students with your public link can submit a pending application. Nothing is admitted until you approve it." />
+                <div>
+                  <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-sarva-muted">Public link</div>
+                  <div className="break-all rounded-xl border border-sarva-border bg-sarva-bg p-3 text-sm text-sarva-text">{publicUrl}</div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" variant="ghost" onClick={() => navigator.clipboard.writeText(publicUrl)}><Copy size={15}/> Copy Link</Button>
+                  <Button type="button" variant="ghost" onClick={() => window.open(publicUrl, '_blank', 'noopener')}><ExternalLink size={15}/> Open Public Page</Button>
+                  <Button type="button" variant="ghost" onClick={() => window.location.assign('/admissions')}><ClipboardList size={15}/> Admission Requests</Button>
+                </div>
+                <div className="rounded-2xl bg-sarva-primarySoft p-4 text-xs leading-5 text-sarva-muted">Save settings after changing the admission switch. The public form never creates a student directly; approval is required.</div>
+              </div>
+            </Card>
+          );
+        })()}
+
         {tab === 'profile' && (
           <Card title="Hostel Profile">
             <div className="mb-5 flex items-center gap-4">

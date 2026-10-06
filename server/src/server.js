@@ -14,6 +14,7 @@ const api = require("./routes/api");
 const remaining = require("./routes/remaining");
 const completion = require("./routes/completion");
 const admin = require("./routes/adminIntegration");
+const admissions = require("./routes/admissions");
 const { startBillingJob } = require("./jobs/billing");
 const { startReminderJob } = require("./jobs/reminders");
 const { startLateFeeJob } = require("./jobs/lateFees");
@@ -29,6 +30,7 @@ app.use(
 app.use(express.json({ limit: "2mb" }));
 const apiLimiter = rateLimit({ windowMs: 60000, limit: 300 });
 app.use("/api", apiLimiter);
+app.use("/api", admissions);
 app.use("/api", api);
 app.use("/api", remaining);
 app.use("/api", completion);
