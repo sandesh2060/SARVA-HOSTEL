@@ -1,4 +1,5 @@
 import React, { useEffect, useId } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown, ChevronRight, RefreshCw, X } from 'lucide-react';
 import TopBar from './TopBar';
 
@@ -275,7 +276,7 @@ export function Modal({ open, onClose, title, children, wide = false }) {
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-[100] flex h-[100dvh] w-screen items-center justify-center overflow-hidden p-3 sm:p-5 lg:p-6"
       role="dialog"
@@ -321,7 +322,8 @@ export function Modal({ open, onClose, title, children, wide = false }) {
           {children}
         </div>
       </section>
-    </div>
+    </div>,
+    document.body
   );
 }
 
