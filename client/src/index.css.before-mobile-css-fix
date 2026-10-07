@@ -623,4 +623,140 @@ form,
 @keyframes sarvaBootRing { 0% { transform: scale(.82); opacity: 0; } 30% { opacity: .8; } 100% { transform: scale(1.18); opacity: 0; } }
 @keyframes sarvaBootDot { 0%,100% { transform: translateY(0); opacity: .25; } 50% { transform: translateY(-3px); opacity: .9; } }
 @media (prefers-reduced-motion: reduce) { .sarva-boot__content, .sarva-boot__logo, .sarva-boot__ring, .sarva-boot__dots i { animation: none !important; } }
-\n\n/* ==========================================================================\n   SARVA HOSTEL MOBILE POLISH — safe top bar, icon tabs, compact student cards\n   ========================================================================== */\n.sarva-page-title-icon {\n  display: grid;\n  width: 2.35rem;\n  height: 2.35rem;\n  flex: 0 0 auto;\n  place-items: center;\n  border-radius: .85rem;\n  background: var(--sarva-primarySoft);\n  color: var(--sarva-primary);\n  box-shadow: inset 0 0 0 1px rgba(103,44,67,.05);\n}\n\n.sarva-pill-tab {\n  display: inline-flex;\n  min-height: 40px;\n  flex: 0 0 auto;\n  align-items: center;\n  justify-content: center;\n  gap: 7px;\n  border: 1px solid transparent;\n  border-radius: 14px;\n  padding: 8px 12px;\n  background: var(--sarva-bg);\n  color: var(--sarva-muted);\n  font-size: 11px;\n  font-weight: 700;\n  line-height: 1;\n  white-space: nowrap;\n  transition: background-color .18s ease, color .18s ease, border-color .18s ease, transform .12s ease;\n}\n.sarva-pill-tab:hover { background: var(--sarva-primarySoft); color: var(--sarva-primary); }\n.sarva-pill-tab:active { transform: scale(.98); }\n.sarva-pill-tab.is-active {\n  border-color: rgba(103,44,67,.12);\n  background: var(--sarva-primary);\n  color: #fff;\n  box-shadow: 0 8px 20px -14px rgba(103,44,67,.7);\n}\n.sarva-pill-tab-icon {\n  display: grid;\n  width: 25px;\n  height: 25px;\n  flex: 0 0 auto;\n  place-items: center;\n  border-radius: 9px;\n  background: rgba(103,44,67,.08);\n}\n.sarva-pill-tab.is-active .sarva-pill-tab-icon { background: rgba(255,255,255,.16); }\n\n.sarva-student-card { aspect-ratio: .78; }\n\n@media (max-width: 1023px) {\n  .sarva-mobile-brandbar {\n    padding-top: env(safe-area-inset-top);\n    box-shadow: 0 8px 24px -20px rgba(36,19,24,.65);\n  }\n}\n\n@media (max-width: 639px) {\n  .sarva-page-header {\n    padding-top: 2px;\n    padding-bottom: 10px;\n  }\n  .sarva-page-title-icon { width: 2.5rem; height: 2.5rem; border-radius: .9rem; }\n  .sarva-page-header h1 { font-size: 1.3rem; }\n  .sarva-page-header p { padding-left: 3rem !important; margin-top: -2px; }\n\n  .sarva-pill-tabs {\n    margin-inline: -12px;\n    padding-inline: 12px;\n    scroll-padding-inline: 12px;\n    overscroll-behavior-x: contain;\n    -webkit-overflow-scrolling: touch;\n  }\n  .sarva-pill-tab { min-height: 42px; border-radius: 14px; padding: 7px 10px; font-size: 10px; }\n\n  .sarva-student-card {\n    aspect-ratio: 1 / 1.06;\n    max-height: 390px;\n    border-radius: 22px !important;\n  }\n  .sarva-student-card h3 { font-size: 18px; }\n}\n\n@media (max-width: 374px) {\n  .sarva-student-card { aspect-ratio: 1 / 1.02; }\n  .sarva-pill-tab { padding-inline: 9px; }\n}\n
+
+/* ==========================================================================
+   SARVA HOSTEL MOBILE POLISH
+   ========================================================================== */
+
+.sarva-page-title-icon {
+  display: grid;
+  width: 2.35rem;
+  height: 2.35rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: .85rem;
+  background: var(--sarva-primarySoft);
+  color: var(--sarva-primary);
+  box-shadow: inset 0 0 0 1px rgba(103,44,67,.05);
+}
+
+.sarva-pill-tab {
+  display: inline-flex;
+  min-height: 40px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  padding: 8px 12px;
+  background: var(--sarva-bg);
+  color: var(--sarva-muted);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    background-color .18s ease,
+    color .18s ease,
+    border-color .18s ease,
+    transform .12s ease;
+}
+
+.sarva-pill-tab:hover {
+  background: var(--sarva-primarySoft);
+  color: var(--sarva-primary);
+}
+
+.sarva-pill-tab:active {
+  transform: scale(.98);
+}
+
+.sarva-pill-tab.is-active {
+  border-color: rgba(103,44,67,.12);
+  background: var(--sarva-primary);
+  color: #fff;
+  box-shadow: 0 8px 20px -14px rgba(103,44,67,.7);
+}
+
+.sarva-pill-tab-icon {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 9px;
+  background: rgba(103,44,67,.08);
+}
+
+.sarva-pill-tab.is-active .sarva-pill-tab-icon {
+  background: rgba(255,255,255,.16);
+}
+
+.sarva-student-card {
+  aspect-ratio: .78;
+}
+
+@media (max-width: 1023px) {
+  .sarva-mobile-brandbar {
+    padding-top: env(safe-area-inset-top);
+    box-shadow: 0 8px 24px -20px rgba(36,19,24,.65);
+  }
+}
+
+@media (max-width: 639px) {
+  .sarva-page-header {
+    padding-top: 2px;
+    padding-bottom: 10px;
+  }
+
+  .sarva-page-title-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: .9rem;
+  }
+
+  .sarva-page-header h1 {
+    font-size: 1.3rem;
+  }
+
+  .sarva-page-header p {
+    padding-left: 3rem !important;
+    margin-top: -2px;
+  }
+
+  .sarva-pill-tabs {
+    margin-inline: -12px;
+    padding-inline: 12px;
+    scroll-padding-inline: 12px;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sarva-pill-tab {
+    min-height: 42px;
+    border-radius: 14px;
+    padding: 7px 10px;
+    font-size: 10px;
+  }
+
+  .sarva-student-card {
+    aspect-ratio: 1 / 1.06;
+    max-height: 390px;
+    border-radius: 22px !important;
+  }
+
+  .sarva-student-card h3 {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 374px) {
+  .sarva-student-card {
+    aspect-ratio: 1 / 1.02;
+  }
+
+  .sarva-pill-tab {
+    padding-inline: 9px;
+  }
+}

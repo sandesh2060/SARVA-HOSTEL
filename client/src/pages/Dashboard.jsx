@@ -6,7 +6,7 @@ import { onDashboardChange } from '../utils/dashboardBus';
 import { Page, Card, KPI, Button, Badge, Empty, Skeleton, Select, Input, Table, money } from '../components/UI';
 import { useAuth } from '../context/Auth';
 import { DashboardHomeSkeleton } from '../components/AppLoader';
-import { Users, Wallet, ReceiptText, PackageSearch, BedDouble, RefreshCw, AlertTriangle, TrendingUp, TrendingDown, Building2, ClipboardList, UserPlus, CreditCard, Boxes, Bell } from 'lucide-react';
+import { Users, Wallet, ReceiptText, PackageSearch, BedDouble, RefreshCw, AlertTriangle, TrendingUp, TrendingDown, Building2, ClipboardList, UserPlus, CreditCard, Boxes, Bell, ChevronRight, Inbox, BarChart3, UserRoundCog } from 'lucide-react';
 import {
   ResponsiveContainer,
   LineChart,
@@ -48,6 +48,49 @@ function StatusBadge({ status }) {
   };
   const [tone, label] = map[status] || ['muted', status];
   return <Badge tone={tone}>{label}</Badge>;
+}
+
+function MobileAppHome({ data, cur, navigate, has }) {
+  const services = [
+    ['/students', 'Students', Users, true],
+    ['/rooms', 'Rooms & Beds', BedDouble, Boolean(data.occupancy)],
+    ['/admissions', 'Admissions', Inbox, true],
+    ['/payments', 'Payments', Wallet, true],
+    ['/billing', 'Billing', ReceiptText, true],
+    ['/expenses', 'Expenses', CreditCard, true],
+    ['/staff', 'Staff', UserRoundCog, Boolean(data.staff)],
+    ['/analytics', 'Analytics', BarChart3, has('operational_analytics')],
+  ].filter((x) => x[3]);
+  return (
+    <div className="sarva-mobile-home">
+      <section className="sarva-mobile-balance">
+        <div className="sarva-mobile-balance__top"><div><small>COLLECTED THIS PERIOD</small><strong>{money(data.finance.collected, cur)}</strong></div><span><Wallet size={22}/></span></div>
+        <div className="sarva-mobile-balance__stats">
+          <button onClick={() => navigate('/students')}><Users size={19}/><b>{data.students.active}</b><small>Students</small></button>
+          <button onClick={() => navigate('/credits')}><CreditCard size={19}/><b>{money(data.finance.outstanding, cur)}</b><small>Outstanding</small></button>
+          {data.occupancy && <button onClick={() => navigate('/rooms')}><BedDouble size={19}/><b>{data.occupancy.occupancyPct}%</b><small>Occupancy</small></button>}
+        </div>
+      </section>
+
+      <section className="sarva-mobile-service-card">
+        <div className="sarva-mobile-section-head"><div><h2>Hostel operations</h2><p>Everything you use every day</p></div></div>
+        <div className="sarva-mobile-service-grid">
+          {services.map(([to,label,Icon]) => <button key={to} onClick={() => navigate(to)}><span><Icon size={23}/></span><b>{label}</b></button>)}
+        </div>
+      </section>
+
+      <section className="sarva-mobile-service-card">
+        <div className="sarva-mobile-section-head"><div><h2>Quick actions</h2><p>Get common work done faster</p></div></div>
+        <div className="sarva-mobile-action-list">
+          <button onClick={() => navigate('/students/new')}><span><UserPlus size={20}/></span><div><b>Add student</b><small>Create a student record</small></div><ChevronRight size={18}/></button>
+          <button onClick={() => navigate('/payments')}><span><Wallet size={20}/></span><div><b>Record payment</b><small>Open payment collection</small></div><ChevronRight size={18}/></button>
+          {data.occupancy && <button onClick={() => navigate('/rooms')}><span><BedDouble size={20}/></span><div><b>Manage rooms</b><small>{data.occupancy.available} bed(s) currently available</small></div><ChevronRight size={18}/></button>}
+        </div>
+      </section>
+
+      {data.alerts?.length > 0 && <section className="sarva-mobile-service-card"><div className="sarva-mobile-section-head"><div><h2>Needs attention</h2><p>{data.alerts.length} item(s) need review</p></div></div><div className="sarva-mobile-action-list">{data.alerts.slice(0,3).map((a)=><button key={a.type} onClick={()=>navigate(a.action.to)}><span className="is-warning"><AlertTriangle size={20}/></span><div><b>{a.title}</b><small>{a.detail}</small></div><ChevronRight size={18}/></button>)}</div></section>}
+    </div>
+  );
 }
 
 export default function Dashboard() {
@@ -173,6 +216,8 @@ export default function Dashboard() {
 
       {!error && data && (
         <>
+          <MobileAppHome data={data} cur={cur} navigate={navigate} has={has} />
+          <div className="sarva-dashboard-desktop-content">
           {/* KPI cards */}
           <div className="mt-4 grid gap-4 xl:grid-cols-3">
             {/* Hero: Collected — the number that matters most, first */}
@@ -680,6 +725,7 @@ export default function Dashboard() {
               </div>
             )}
           </Card>
+          </div>
         </>
       )}
     </div>

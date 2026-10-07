@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Eye, EyeOff, LockKeyhole, Mail, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, LockKeyhole, Mail, ShieldCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/Auth';
 import SarvaMark from '../components/SarvaMark';
 
@@ -41,6 +42,7 @@ export default function Login() {
 
       <section className="sarva-auth-panel">
         <form onSubmit={submit} className="sarva-auth-card">
+          <Link to="/welcome" className="sarva-auth-back" aria-label="Back"><ArrowLeft size={19} /></Link>
           <div className="sarva-auth-mobile-logo">
             <span className="sarva-auth-mobile-mark"><SarvaMark style={{ width: 34, height: 34 }} /></span>
             <div><strong>SARVA Hostel</strong><small>Hostel management</small></div>
@@ -100,9 +102,8 @@ export default function Login() {
             {loading ? 'Signing in…' : 'Sign in'}
           </button>
 
-          <p className="sarva-auth-footnote">
-            SARVA Hostel keeps the login screen focused on accounts already created by your hostel.
-          </p>
+          <p className="sarva-auth-switch">New to SARVA Hostel? <Link to="/signup">Create account</Link></p>
+          <p className="sarva-auth-footnote">Secure access for approved hostel owners and staff.</p>
         </form>
       </section>
     </main>
