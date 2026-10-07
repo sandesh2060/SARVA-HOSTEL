@@ -6,7 +6,7 @@ import api from '../services/api';
 import {
   LayoutDashboard, Users, WalletCards, BadgeDollarSign, ReceiptText, Package, BedDouble,
   ClipboardCheck, UserRoundCog, Bell, ChartNoAxesCombined, FileText, Settings, LogOut,
-  CalendarRange, Send, History, Menu, X, Plus, UserPlus, CreditCard, Inbox,
+  CalendarRange, Send, History, Menu, X, Plus, UserPlus, CreditCard, Inbox, Search, UserRound,
 } from 'lucide-react';
 
 const groups = [
@@ -139,7 +139,7 @@ function HostelStatusPanel({ caps }) {
  * Reads capabilities from the authenticated hostel to filter nav items.
  */
 export default function Sidebar() {
-  const { hostel, logout } = useAuth();
+  const { hostel, user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -176,12 +176,19 @@ export default function Sidebar() {
       </aside>
 
       {/* Mobile brand bar. Navigation is at thumb level in the bottom bar. */}
-      <div className="sarva-mobile-brandbar sticky top-0 z-30 border-b border-white/10 bg-sarva-primary px-4 text-white lg:hidden">
-        <div className="mx-auto flex min-h-[58px] max-w-lg items-center justify-between">
-          <Logo size={27} />
-          <div className="min-w-0 pl-3 text-right">
-            <div className="max-w-[180px] truncate text-xs font-semibold">{hostel?.name || 'SARVA Hostel'}</div>
-            <div className="text-[10px] text-white/55">Hostel management</div>
+      <div className="sarva-mobile-brandbar sticky top-0 z-30 bg-sarva-primary text-white lg:hidden">
+        <div className="sarva-mobile-brandbar-inner mx-auto max-w-lg">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="sarva-mobile-avatar"><UserRound size={22} strokeWidth={2} /></span>
+            <div className="min-w-0">
+              <div className="truncate text-[17px] font-semibold leading-tight">Hi, {user?.name?.split(' ')[0] || 'Owner'}</div>
+              <div className="mt-0.5 max-w-[180px] truncate text-[10px] font-medium text-white/60">{hostel?.name || 'SARVA Hostel'}</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            <button type="button" className="sarva-mobile-header-action" onClick={() => navigate('/students')} aria-label="Search students"><Search size={21} /></button>
+            {caps.includes('email_notifications') && <button type="button" className="sarva-mobile-header-action" onClick={() => navigate('/notifications')} aria-label="Notifications"><Bell size={21} /></button>}
+            {caps.includes('settings') && <button type="button" className="sarva-mobile-header-action" onClick={() => navigate('/settings')} aria-label="Settings"><Settings size={20} /></button>}
           </div>
         </div>
       </div>

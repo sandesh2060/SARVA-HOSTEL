@@ -760,3 +760,63 @@ form,
     padding-inline: 9px;
   }
 }
+
+/* SARVA MOBILE CLEAN APP LAYOUT — compact, touch-first, content-led */
+@media (max-width: 639px) {
+  body { background: #f7f8fa; }
+  .sarva-mobile-brandbar {
+    padding: max(8px, env(safe-area-inset-top)) 16px 12px;
+    border: 0 !important;
+    border-radius: 0 0 24px 24px;
+    box-shadow: 0 14px 34px -28px rgba(45,18,30,.75);
+  }
+  .sarva-mobile-brandbar-inner { min-height: 58px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .sarva-mobile-avatar { display:grid; width:42px; height:42px; flex:0 0 auto; place-items:center; border-radius:15px; background:#fff; color:var(--sarva-primary); box-shadow:0 8px 20px -15px #000; }
+  .sarva-mobile-header-action { display:grid; width:40px; height:40px; min-height:40px !important; place-items:center; padding:0; border-radius:14px; color:#fff; background:rgba(255,255,255,.08); transition:background .18s ease,transform .12s ease; }
+  .sarva-mobile-header-action:active { transform:scale(.94); background:rgba(255,255,255,.16); }
+
+  main { padding: 14px 12px 0 !important; }
+  .sarva-page-header { margin-bottom:2px; padding:0 2px 8px; }
+  .sarva-page-title-icon { width:38px; height:38px; border-radius:13px; }
+  .sarva-page-header h1 { font-size:1.2rem; }
+  .sarva-page-header p { margin-top:1px; padding-left:46px !important; font-size:10px; }
+  .sarva-page-actions { padding-top:4px; }
+
+  .card, .card-hover { border-radius:20px !important; box-shadow:0 12px 30px -26px rgba(36,19,24,.45) !important; }
+  .sarva-dashboard { gap:12px; }
+  .sarva-dashboard-welcome { padding:16px; border-radius:20px; gap:12px; }
+  .sarva-dashboard-welcome h2 { font-size:1.12rem; }
+  .sarva-dashboard-welcome p { font-size:.72rem; }
+  .sarva-dashboard-welcome__action { min-height:42px; border-radius:13px; }
+  .sarva-dashboard .grid { gap:10px; }
+  .sarva-dashboard .rounded-2xl.bg-sarva-primary { padding:16px; border-radius:20px; }
+  .sarva-dashboard .rounded-2xl.bg-sarva-primary .text-3xl { font-size:1.55rem; }
+  .sarva-dashboard section.card { padding:16px; }
+
+  .sarva-pill-tabs { gap:7px; margin-inline:-12px; padding:2px 12px 4px; }
+  .sarva-pill-tab { min-height:38px; padding:6px 9px; border-radius:12px; background:#fff; border-color:var(--sarva-border); box-shadow:0 8px 18px -18px rgba(36,19,24,.55); }
+  .sarva-pill-tab-icon { width:24px; height:24px; border-radius:8px; }
+
+  .sarva-student-card { aspect-ratio:auto !important; max-height:none !important; border:1px solid var(--sarva-border); border-radius:20px !important; background:#fff; box-shadow:0 12px 30px -25px rgba(36,19,24,.55) !important; }
+  .sarva-student-card-mobile { display:flex; align-items:center; gap:12px; min-height:128px; padding:12px; }
+  .sarva-student-card-desktop { display:none; }
+  .sarva-student-avatar { width:76px; height:92px; flex:0 0 auto; overflow:hidden; border-radius:16px; background:linear-gradient(145deg,var(--sarva-primary),var(--sarva-primaryDark)); }
+  .sarva-student-avatar img { width:100%; height:100%; object-fit:cover; object-position:center; }
+  .sarva-student-avatar span { display:grid; width:100%; height:100%; place-items:center; color:#fff; font-size:22px; font-weight:800; }
+  .sarva-student-status { display:inline-flex; flex:0 0 auto; align-items:center; gap:5px; white-space:nowrap; border-radius:999px; background:var(--sarva-bg); padding:5px 7px; color:var(--sarva-muted); font-size:9px; font-weight:700; }
+  .sarva-student-status i { width:6px; height:6px; border-radius:999px; }
+  .sarva-student-open { display:grid; width:32px; height:32px; flex:0 0 auto; place-items:center; border-radius:11px; background:var(--sarva-primarySoft); color:var(--sarva-primary); }
+  .sarva-student-card.skeleton { min-height:128px; }
+
+  .sarva-mobile-bottom { padding:0 10px max(8px,env(safe-area-inset-bottom)); }
+  .sarva-mobile-bottom-inner { min-height:66px; border:1px solid rgba(92,42,61,.08); border-radius:22px; box-shadow:0 18px 46px -22px rgba(36,19,24,.48); }
+  .sarva-mobile-tab { min-height:58px; }
+  .sarva-mobile-tab-icon { width:31px; height:28px; border-radius:10px; }
+  .sarva-mobile-tab.is-active .sarva-mobile-tab-icon { background:var(--sarva-primarySoft); }
+  .sarva-mobile-quick-button { width:48px; height:48px; margin-top:-18px; border:4px solid #fff; box-shadow:0 10px 24px -12px rgba(92,42,61,.8); }
+}
+@media (min-width: 640px) {
+  .sarva-student-card-mobile { display:none; }
+  .sarva-student-card-desktop { display:block; position:absolute; inset:0; }
+}
+
