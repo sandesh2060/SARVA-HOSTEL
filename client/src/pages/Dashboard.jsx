@@ -275,7 +275,7 @@ export default function Dashboard() {
           </Card>
 
           {/* Quick actions */}
-          <Card title="Quick actions" className="mt-6">
+          <Card title="Quick actions" className="sarva-dashboard-quick mt-6">
             <div className="flex flex-wrap gap-2">
               <Button variant="ghost" onClick={() => navigate('/students')}>
                 <UserPlus size={16} /> Register student

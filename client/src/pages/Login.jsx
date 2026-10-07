@@ -1,11 +1,14 @@
 import { useState } from 'react';
+import { Eye, EyeOff, LockKeyhole, Mail, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/Auth';
+import SarvaMark from '../components/SarvaMark';
 
 export default function Login() {
   const { login } = useAuth();
   const [f, setF] = useState({ email: '', password: '' });
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -22,49 +25,86 @@ export default function Login() {
   };
 
   return (
-    <div className="grid min-h-screen bg-sarva-bg lg:grid-cols-2">
-      <div className="animate-fade-in hidden flex-col justify-between bg-sarva-primary p-12 text-white lg:flex">
-        <div className="text-3xl font-black">
-          SARVA <span className="text-sarva-gold">Hostel</span>
+    <main className="sarva-auth-shell">
+      <section className="sarva-auth-brand" aria-hidden="true">
+        <div className="sarva-auth-brand__logo">
+          <SarvaMark style={{ width: 44, height: 44 }} />
+          <span>SARVA <b>Hostel</b></span>
         </div>
-        <div>
-          <h2 className="text-3xl font-bold leading-tight">
-            Run your hostel like a<br />modern hospitality business.
-          </h2>
-          <p className="mt-4 max-w-md text-white/70">
-            Students, rooms, billing, credit and reports — one SARVA workspace.
-          </p>
+        <div className="sarva-auth-brand__copy">
+          <span className="sarva-auth-eyebrow">HOSTEL MANAGEMENT</span>
+          <h1>Everything your hostel needs, in one calm workspace.</h1>
+          <p>Students, rooms, payments, admissions and daily operations — designed to stay simple on every screen.</p>
         </div>
-        <div className="text-xs text-white/50">SARVA Ecosystem · Hostel Management</div>
-      </div>
+        <div className="sarva-auth-trust"><ShieldCheck size={16} /> Secure owner workspace</div>
+      </section>
 
-      <div className="flex items-center justify-center p-6">
-        <form onSubmit={submit} className="animate-fade-in-delay-1 w-full max-w-md card">
-          <h1 className="text-2xl font-bold text-sarva-text lg:hidden">
-            SARVA <span className="text-sarva-primary">Hostel</span>
-          </h1>
-          <p className="mb-6 mt-1 text-sm text-sarva-muted">Hostel owner sign in</p>
-          {err && <p className="mb-3 animate-fade-in rounded-lg bg-rose-50 px-3 py-2 text-sm text-sarva-danger">{err}</p>}
-          <div className="space-y-3">
-            <input placeholder="Email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} />
-            <input type="password" placeholder="Password" value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} />
-            <button
-              disabled={loading}
-              className="flex w-full items-center justify-center gap-2 bg-sarva-primary text-white hover:bg-sarva-primaryHover disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {loading && <span className="sarva-spinner" aria-hidden="true" />}
-              {loading ? 'Signing in…' : 'Sign in'}
-            </button>
-            <button type="button" className="w-full border border-sarva-border text-sarva-text hover:bg-sarva-primarySoft">
-              Continue with Google (configure OAuth)
-            </button>
+      <section className="sarva-auth-panel">
+        <form onSubmit={submit} className="sarva-auth-card">
+          <div className="sarva-auth-mobile-logo">
+            <span className="sarva-auth-mobile-mark"><SarvaMark style={{ width: 34, height: 34 }} /></span>
+            <div><strong>SARVA Hostel</strong><small>Hostel management</small></div>
           </div>
-          <div className="mt-5 flex justify-between text-xs text-sarva-muted">
-            <a href="/forgot-password" className="hover:text-sarva-primary">Forgot password?</a>
-            <a href="/register-hostel" className="hover:text-sarva-primary">Register your hostel</a>
+
+          <div className="sarva-auth-heading">
+            <span className="sarva-auth-eyebrow">WELCOME BACK</span>
+            <h2>Sign in to your hostel</h2>
+            <p>Use your owner or staff account to continue.</p>
           </div>
+
+          {err && <div className="sarva-auth-error" role="alert">{err}</div>}
+
+          <div className="sarva-auth-fields">
+            <label className="sarva-auth-field">
+              <span>Email address</span>
+              <div className="sarva-auth-input">
+                <Mail size={18} />
+                <input
+                  type="email"
+                  autoComplete="email"
+                  inputMode="email"
+                  placeholder="you@example.com"
+                  value={f.email}
+                  onChange={(e) => setF({ ...f, email: e.target.value })}
+                  required
+                />
+              </div>
+            </label>
+
+            <label className="sarva-auth-field">
+              <span>Password</span>
+              <div className="sarva-auth-input">
+                <LockKeyhole size={18} />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  placeholder="Enter your password"
+                  value={f.password}
+                  onChange={(e) => setF({ ...f, password: e.target.value })}
+                  required
+                />
+                <button type="button" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? 'Hide password' : 'Show password'}>
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </label>
+          </div>
+
+          <div className="sarva-auth-row">
+            <span className="text-xs text-sarva-muted">Secure sign in</span>
+            <a href="/forgot-password">Forgot password?</a>
+          </div>
+
+          <button disabled={loading} className="sarva-auth-submit">
+            {loading && <span className="sarva-spinner" aria-hidden="true" />}
+            {loading ? 'Signing in…' : 'Sign in'}
+          </button>
+
+          <p className="sarva-auth-footnote">
+            SARVA Hostel keeps the login screen focused on accounts already created by your hostel.
+          </p>
         </form>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

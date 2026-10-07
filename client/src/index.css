@@ -892,3 +892,163 @@ form,
   .sarva-mobile-brandbar { padding-inline: 12px; }
 }
 
+/* ==========================================================================
+   SARVA HOSTEL — MOBILE APP SYSTEM V2
+   Clean, native-feeling mobile layout inspired by modern consumer apps.
+   ========================================================================== */
+
+.sarva-auth-shell {
+  min-height: 100dvh;
+  background: var(--sarva-bg);
+}
+.sarva-auth-brand { display: none; }
+.sarva-auth-panel {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.sarva-auth-card {
+  width: min(100%, 440px);
+  border: 1px solid var(--sarva-border);
+  border-radius: 30px;
+  background: #fff;
+  padding: 28px;
+  box-shadow: 0 28px 80px -48px rgba(45,18,30,.42);
+}
+.sarva-auth-mobile-logo { display:flex; align-items:center; gap:11px; margin-bottom:32px; }
+.sarva-auth-mobile-mark { display:grid; width:48px; height:48px; place-items:center; border-radius:16px; background:var(--sarva-primary); color:var(--sarva-gold); }
+.sarva-auth-mobile-logo strong { display:block; color:var(--sarva-text); font-size:1rem; }
+.sarva-auth-mobile-logo small { display:block; margin-top:2px; color:var(--sarva-muted); font-size:.7rem; }
+.sarva-auth-eyebrow { color:var(--sarva-gold); font-size:.66rem; font-weight:800; letter-spacing:.14em; }
+.sarva-auth-heading h2 { margin-top:7px; color:var(--sarva-text); font-family:var(--font-display,inherit); font-size:1.8rem; font-weight:700; letter-spacing:-.035em; }
+.sarva-auth-heading p { margin-top:6px; color:var(--sarva-muted); font-size:.84rem; }
+.sarva-auth-fields { display:grid; gap:15px; margin-top:26px; }
+.sarva-auth-field > span { display:block; margin:0 0 7px 3px; color:var(--sarva-text); font-size:.76rem; font-weight:700; }
+.sarva-auth-input { display:flex; min-height:52px; align-items:center; gap:10px; border:1px solid var(--sarva-border); border-radius:16px; background:#fff; padding:0 14px; color:var(--sarva-muted); transition:border-color .18s,box-shadow .18s; }
+.sarva-auth-input:focus-within { border-color:var(--sarva-primary); box-shadow:0 0 0 3px rgba(103,44,67,.10); }
+.sarva-auth-input input { min-width:0; flex:1; border:0; outline:0; background:transparent; color:var(--sarva-text); font-size:.9rem; }
+.sarva-auth-input button { display:grid; width:36px; height:36px; place-items:center; padding:0; border-radius:11px; color:var(--sarva-muted); }
+.sarva-auth-row { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:14px; }
+.sarva-auth-row a { color:var(--sarva-primary); font-size:.76rem; font-weight:700; }
+.sarva-auth-submit { display:flex; width:100%; min-height:52px; align-items:center; justify-content:center; gap:9px; margin-top:20px; border-radius:16px; background:var(--sarva-primary); color:#fff; font-size:.9rem; font-weight:800; box-shadow:0 16px 30px -20px rgba(103,44,67,.85); }
+.sarva-auth-submit:disabled { opacity:.65; cursor:not-allowed; }
+.sarva-auth-error { margin-top:18px; border-radius:14px; background:#fff1f2; padding:11px 13px; color:var(--sarva-danger); font-size:.78rem; }
+.sarva-auth-footnote { margin-top:20px; text-align:center; color:var(--sarva-muted); font-size:.68rem; line-height:1.55; }
+
+@media (min-width: 900px) {
+  .sarva-auth-shell { display:grid; grid-template-columns:minmax(0,1.05fr) minmax(440px,.95fr); }
+  .sarva-auth-brand { display:flex; min-height:100dvh; flex-direction:column; justify-content:space-between; padding:54px; background:var(--sarva-primary); color:#fff; }
+  .sarva-auth-brand__logo { display:flex; align-items:center; gap:12px; color:var(--sarva-gold); font-size:1.4rem; font-weight:800; }
+  .sarva-auth-brand__logo span { color:#fff; }
+  .sarva-auth-brand__logo b { color:var(--sarva-gold); }
+  .sarva-auth-brand__copy { max-width:580px; }
+  .sarva-auth-brand__copy h1 { margin-top:14px; max-width:560px; font-size:clamp(2.5rem,4vw,4.6rem); font-weight:700; line-height:.98; letter-spacing:-.055em; }
+  .sarva-auth-brand__copy p { margin-top:22px; max-width:500px; color:rgba(255,255,255,.7); font-size:1rem; line-height:1.7; }
+  .sarva-auth-trust { display:flex; align-items:center; gap:8px; color:rgba(255,255,255,.58); font-size:.78rem; }
+  .sarva-auth-mobile-logo { display:none; }
+}
+
+/* Mobile dashboard: consumer-app density, without hiding real hostel data. */
+@media (max-width: 639px) {
+  .sarva-dashboard { padding-bottom: 8px; }
+  .sarva-dashboard .sarva-page-header { margin-bottom:0; }
+  .sarva-dashboard .sarva-page-actions { gap:7px; }
+  .sarva-dashboard .sarva-page-actions > div:first-child {
+    max-width: 150px;
+    min-height: 42px;
+    border-radius: 14px !important;
+  }
+
+  .sarva-dashboard-welcome {
+    position:relative;
+    overflow:hidden;
+    padding:18px !important;
+    border-radius:24px !important;
+    box-shadow:0 20px 38px -28px rgba(103,44,67,.7);
+  }
+  .sarva-dashboard-welcome::after {
+    content:"";
+    position:absolute;
+    width:150px;
+    height:150px;
+    right:-58px;
+    top:-74px;
+    border-radius:999px;
+    background:rgba(255,255,255,.08);
+    pointer-events:none;
+  }
+  .sarva-dashboard-welcome__eyebrow { font-size:9px; letter-spacing:.14em; }
+  .sarva-dashboard-welcome h2 { max-width:240px; margin-top:5px; font-size:1.2rem !important; line-height:1.15; }
+  .sarva-dashboard-welcome p { max-width:270px; margin-top:6px; line-height:1.5; }
+  .sarva-dashboard-welcome__action { position:relative; z-index:1; margin-top:4px; }
+
+  .sarva-dashboard > div.grid,
+  .sarva-dashboard > div > div.grid { min-width:0; }
+  .sarva-dashboard .sarva-hero-metric { font-size:clamp(1.35rem,7vw,1.75rem); }
+  .sarva-dashboard .card,
+  .sarva-dashboard .card-hover { border-radius:22px !important; }
+
+  /* Quick actions become a clean icon/action grid instead of a button cloud. */
+  .sarva-dashboard-quick > div {
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:8px !important;
+  }
+  .sarva-dashboard-quick > div > button {
+    min-width:0;
+    min-height:72px;
+    flex-direction:column !important;
+    gap:7px !important;
+    border:1px solid var(--sarva-border);
+    border-radius:18px !important;
+    padding:10px 6px !important;
+    background:#fff !important;
+    color:var(--sarva-text) !important;
+    box-shadow:none !important;
+    white-space:normal !important;
+    font-size:10px !important;
+    line-height:1.2;
+  }
+  .sarva-dashboard-quick > div > button svg { color:var(--sarva-primary); }
+
+  /* Registration becomes stacked, thumb-friendly cards. */
+  .sarva-register-card { padding:14px !important; border-radius:22px !important; }
+  .sarva-register-card > div:first-child { align-items:flex-start; gap:10px; margin-bottom:16px; }
+  .sarva-register-card > div:first-child span { max-width:130px; text-align:right; line-height:1.3; }
+  .sarva-register-form { gap:14px; }
+  .sarva-register-section,
+  .sarva-register-block { border:1px solid var(--sarva-border); border-radius:20px; background:#fff; padding:14px; }
+  .sarva-register-section__title { margin-bottom:12px; }
+  .sarva-register-section__title svg { display:grid; width:32px; height:32px; padding:8px; border-radius:11px; background:var(--sarva-primarySoft); }
+  .sarva-register-section__grid { grid-template-columns:minmax(0,1fr) !important; gap:10px !important; }
+  .sarva-register-section input,
+  .sarva-register-section select,
+  .sarva-register-block input,
+  .sarva-register-block select,
+  .sarva-register-form textarea { min-height:48px; border-radius:14px; font-size:16px; }
+  .sarva-register-block > .mb-3 { align-items:flex-start; }
+  .sarva-register-block button { min-height:42px; }
+  .sarva-register-actions { position:sticky; z-index:20; bottom:calc(76px + env(safe-area-inset-bottom)); margin:0 -6px -4px; padding:10px; border:1px solid var(--sarva-border); border-radius:18px; background:rgba(255,255,255,.94); backdrop-filter:blur(16px); box-shadow:0 18px 42px -28px rgba(36,19,24,.7); }
+  .sarva-register-actions > button:first-child { min-width:0; flex:1; }
+  .sarva-register-actions > button:last-child { padding-inline:14px; }
+
+  /* Universal phone hardening for page cards and long content. */
+  main section.card { overflow:hidden; }
+  main section.card h2,
+  main section.card p,
+  main section.card span,
+  main section.card div { overflow-wrap:anywhere; }
+  main .grid > * { min-width:0; }
+  main [class*="grid-cols"] { min-width:0; }
+  main input, main select, main textarea { min-width:0; }
+}
+
+@media (max-width: 374px) {
+  .sarva-dashboard-quick > div { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .sarva-auth-panel { padding:14px; }
+  .sarva-auth-card { padding:20px 17px; border-radius:24px; }
+  .sarva-auth-heading h2 { font-size:1.55rem; }
+  .sarva-register-actions { bottom:calc(72px + env(safe-area-inset-bottom)); }
+}
+

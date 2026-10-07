@@ -144,13 +144,13 @@ export default function StudentRegister() {
       }
       subtitle="Create a new hostel student record."
     >
-      <Card>
+      <Card className="sarva-register-card">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="font-semibold text-sarva-text">Student details</h2>
           <span className="text-xs text-sarva-muted">Fields marked * are required</span>
         </div>
 
-        <form onSubmit={submit} className="space-y-6">
+        <form onSubmit={submit} className="sarva-register-form space-y-6">
           <Section icon={UserRound} title="Personal">
             <Input required placeholder="Student name *" value={form.name} onChange={(e) => set('name', e.target.value)} />
             <Input required placeholder="Phone *" value={form.phone} onChange={(e) => set('phone', e.target.value)} />
@@ -220,7 +220,7 @@ export default function StudentRegister() {
             </Select>
           </Section>
 
-          <div className="rounded-2xl border border-sarva-border p-4">
+          <div className="sarva-register-block rounded-2xl border border-sarva-border p-4">
             <div className="mb-3 flex items-center gap-2">
               <BedDouble size={16} className="text-sarva-primary" />
               <b className="text-sm text-sarva-text">Room assignment (optional)</b>
@@ -264,7 +264,7 @@ export default function StudentRegister() {
             )}
           </div>
 
-          <div className="rounded-2xl border border-sarva-border p-4">
+          <div className="sarva-register-block rounded-2xl border border-sarva-border p-4">
             <div className="mb-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FileText size={16} className="text-sarva-primary" />
@@ -321,7 +321,7 @@ export default function StudentRegister() {
 
           {error && <div className="rounded-xl bg-rose-50 p-3 text-sm text-sarva-danger">{error}</div>}
 
-          <div className="flex items-center gap-3">
+          <div className="sarva-register-actions flex items-center gap-3">
             <Button disabled={saving}>{saving ? 'Registering & uploading…' : 'Register Student'}</Button>
             <Button type="button" variant="ghost" onClick={() => nav('/students')}>Cancel</Button>
           </div>
@@ -333,12 +333,12 @@ export default function StudentRegister() {
 
 function Section({ icon: Icon, title, children }) {
   return (
-    <div>
-      <div className="mb-3 flex items-center gap-2">
+    <div className="sarva-register-section">
+      <div className="sarva-register-section__title mb-3 flex items-center gap-2">
         {Icon && <Icon size={16} className="text-sarva-primary" />}
         <h3 className="text-sm font-semibold text-sarva-text">{title}</h3>
       </div>
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{children}</div>
+      <div className="sarva-register-section__grid grid gap-3 md:grid-cols-2 xl:grid-cols-3">{children}</div>
     </div>
   );
 }
