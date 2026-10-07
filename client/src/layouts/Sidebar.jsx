@@ -23,7 +23,7 @@ const groups = [
     ['/payments', 'Payments', 'payments', WalletCards],
     ['/calendar', 'Calendar', 'payments', CalendarRange],
     ['/billing', 'Billing', 'payments', CalendarRange],
-    ['/credits', 'Credits', 'credit', BadgeDollarSign],
+    ['/credits', 'Outstanding', 'credit', BadgeDollarSign],
     ['/expenses', 'Expenses', 'expenses', ReceiptText],
     ['/salary', 'Salary', 'salary', BadgeDollarSign],
   ]},

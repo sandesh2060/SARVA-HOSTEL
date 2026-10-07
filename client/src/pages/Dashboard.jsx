@@ -525,7 +525,7 @@ export default function Dashboard() {
               </Card>
             )}
 
-            <Card title="Credit snapshot" action={<Button variant="ghost" className="px-3 py-1.5 text-xs" onClick={() => navigate('/credits')}>Open credits</Button>}>
+            <Card title="Outstanding snapshot" action={<Button variant="ghost" className="px-3 py-1.5 text-xs" onClick={() => navigate('/credits')}>Open outstanding</Button>}>
               <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
                 <div>
                   <div className="text-xs text-sarva-muted">Outstanding</div>

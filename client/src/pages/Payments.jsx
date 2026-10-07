@@ -149,11 +149,8 @@ export default function Payments() {
     return upcoming[0]?.dueDate ? new Date(upcoming[0].dueDate).toLocaleDateString() : selected?.billing?.nextPayment?.primary || '\u2014';
   }, [openInvoices, selected]);
 
-  const creditOutstanding = useMemo(() => {
-    const charged = (selected?.credits || []).filter((c) => c.type === 'charge').reduce((s, c) => s + num(c.amount), 0);
-    const repaid = (selected?.credits || []).filter((c) => c.type === 'repayment' || c.type === 'reversal').reduce((s, c) => s + num(c.amount), 0);
-    return Math.max(0, charged - repaid);
-  }, [selected]);
+  const advanceCredit = num(selected?.advanceCreditBalance ?? selected?.student?.advanceCredit);
+  const allowOverpayment = hostelSettings?.settings?.allowOverpayment !== false;
 
   const selectStudentRecord = useCallback(async (id) => {
     setPayError('');
@@ -198,7 +195,7 @@ export default function Payments() {
   }, [selectedTotal]);
 
   const amountNum = Number(amount) || 0;
-  const amountValid = amountNum > 0 && amountNum <= selectedTotal + 0.0001;
+  const amountValid = amountNum > 0 && (allowOverpayment || amountNum <= totalOutstanding + 0.0001);
 
   const allocationPreview = useMemo(() => {
     let remaining = amountNum;
@@ -223,34 +220,21 @@ export default function Payments() {
   };
 
   const doConfirmPay = async () => {
-    if (processingRef.current) return;
+    if (processingRef.current || !selected?.student?._id) return;
     processingRef.current = true;
     setProcessing(true);
     setPayError('');
-    const receipts = [];
     try {
-      let remaining = amountNum;
-      for (const { invoice, alloc } of allocationPreview) {
-        if (alloc <= 0) continue;
-        const { data } = await api.post(`/invoices/${invoice._id}/pay`, {
-          amount: alloc,
-          method,
-          reference: reference || undefined,
-        });
-        receipts.push({ invoiceId: invoice._id, paymentId: data.payment?._id });
-        remaining -= alloc;
-      }
-      setSuccess({ receipts, totalPaid: amountNum });
+      const requestKey = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${selected.student._id}`;
+      const { data } = await api.post(`/payments/student/${selected.student._id}`, { amount: amountNum, method, reference: reference || undefined, requestKey });
+      setSuccess({ receipts: data.payment?._id ? [{ paymentId: data.payment._id }] : [], totalPaid: amountNum, creditAdded: num(data.creditAdded), creditBalance: num(data.creditBalance) });
       setConfirmOpen(false);
       await selectStudentRecordSilently(selected.student._id);
       emitDashboardChange();
       loadSummary();
       loadNeedsCollection();
     } catch (e) {
-      setPayError(
-        (e.response?.data?.message || e.message) +
-          (receipts.length ? ` (Note: ${receipts.length} of ${allocationPreview.length} invoice payment(s) already went through before this failed -- check the student's Payments tab before retrying.)` : '')
-      );
+      setPayError(e.response?.data?.message || e.message);
       setConfirmOpen(false);
     } finally {
       setProcessing(false);
@@ -258,7 +242,6 @@ export default function Payments() {
     }
   };
 
-  // Reload the selected student's data without resetting the success screen.
   const selectStudentRecordSilently = async (id) => {
     try {
       const { data } = await api.get('/students/' + id);
@@ -407,7 +390,7 @@ export default function Payments() {
                 <div className="sarva-mobile-safe-grid grid grid-cols-2 gap-3 sm:grid-cols-4">
                   <StatCard label="Outstanding" value={money(totalOutstanding, cur)} icon={CreditCard} tone={totalOutstanding > 0 ? 'warning' : 'success'} />
                   <StatCard label="Overdue" value={money(overdueTotal, cur)} icon={AlertTriangle} tone="gold" />
-                  <StatCard label="Credit" value={money(creditOutstanding, cur)} icon={Wallet} tone="primary" />
+                  <StatCard label="Advance Credit" value={money(advanceCredit, cur)} icon={Wallet} tone="primary" />
                   <StatCard label="Next Due" value={nextDue} icon={CalendarClock} tone="primary" />
                 </div>
 
@@ -435,7 +418,7 @@ export default function Payments() {
                               selectedInvoiceIds.has(inv._id) ? 'border-sarva-primary bg-sarva-primarySoft/30' : 'border-sarva-border'
                             }`}
                           >
-                            <input type="checkbox" checked={selectedInvoiceIds.has(inv._id)} onChange={() => toggleInvoice(inv._id)} className="h-4 w-4 accent-sarva-primary" />
+                            <input type="checkbox" checked readOnly disabled className="h-4 w-4 accent-sarva-primary" />
                             <div className="flex-1">
                               <div className="flex items-center gap-2 text-sm font-semibold text-sarva-text">
                                 {inv.periodKey}
@@ -454,18 +437,18 @@ export default function Payments() {
                   )}
                 </div>
 
-                {openInvoices.length > 0 && (
+                {(openInvoices.length > 0 || allowOverpayment) && (
                   <>
                     {/* Amount */}
                     <div>
                       <h3 className="mb-2 text-sm font-semibold text-sarva-text">Amount to Collect</h3>
-                      <div className="mb-2 text-xs text-sarva-muted">Selected outstanding: <span className="font-semibold text-sarva-text">{money(selectedTotal, cur)}</span></div>
+                      <div className="mb-2 text-xs text-sarva-muted">Outstanding: <span className="font-semibold text-sarva-text">{money(totalOutstanding, cur)}</span> · Advance credit: <span className="font-semibold text-sarva-text">{money(advanceCredit, cur)}</span></div>
                       <div className="flex flex-wrap gap-2">
                         <Input type="number" min="0" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} className="max-w-[200px]" />
-                        <Button variant="ghost" onClick={() => setAmount(String(selectedTotal))}>Pay Full</Button>
+                        <Button variant="ghost" onClick={() => setAmount(String(totalOutstanding))} disabled={!totalOutstanding}>Pay Full</Button>
                       </div>
                       {!amountValid && amount !== '' && (
-                        <p className="mt-1 text-xs text-sarva-danger">Amount must be greater than 0 and cannot exceed the selected outstanding total.</p>
+                        <p className="mt-1 text-xs text-sarva-danger">Enter an amount greater than 0. Overpayment is stored as student advance credit when enabled.</p>
                       )}
                     </div>
 
@@ -586,9 +569,9 @@ export default function Payments() {
                 <div className="flex items-center justify-between"><span className="text-white/70">Invoices</span><span className="font-semibold">{selectedInvoices.map((i) => i.periodKey).join(', ') || '\u2014'}</span></div>
                 <div className="flex items-center justify-between"><span className="text-white/70">Method</span><span className="font-semibold capitalize">{method ? method.replaceAll('_', ' ') : '\u2014'}</span></div>
                 <div className="my-3 border-t border-white/15" />
-                <div className="flex items-center justify-between"><span className="text-white/70">Selected Outstanding</span><span className="font-semibold">{money(selectedTotal, cur)}</span></div>
+                <div className="flex items-center justify-between"><span className="text-white/70">Outstanding</span><span className="font-semibold">{money(totalOutstanding, cur)}</span></div>
                 <div className="flex items-center justify-between"><span className="text-white/70">Paying Now</span><span className="font-bold text-sarva-gold">{money(amountNum, cur)}</span></div>
-                <div className="flex items-center justify-between"><span className="text-white/70">Remaining</span><span className="font-semibold">{money(Math.max(0, selectedTotal - amountNum), cur)}</span></div>
+                <div className="flex items-center justify-between"><span className="text-white/70">Remaining</span><span className="font-semibold">{money(Math.max(0, totalOutstanding - amountNum), cur)}</span></div>
                 <Button variant="gold" className="mt-3 w-full justify-center" disabled={!canConfirm || !!success} onClick={openConfirm}>
                   Confirm Payment
                 </Button>
@@ -675,6 +658,8 @@ export default function Payments() {
                 </div>
               ))}
             </div>
+            {amountNum > totalOutstanding && totalOutstanding > 0 && <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800"><b>{money(amountNum-totalOutstanding,cur)}</b> will be stored as student advance credit after all outstanding invoices are settled.</div>}
+            {!totalOutstanding && amountNum > 0 && <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">There is no outstanding invoice. This payment will be recorded as student advance credit.</div>}
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="ghost" onClick={() => setConfirmOpen(false)} disabled={processing}>Cancel</Button>
               <Button onClick={doConfirmPay} loading={processing}>
