@@ -382,8 +382,8 @@ export default function Payments() {
                   <ArrowLeft size={14} /> Change Student
                 </button>
 
-                <div className="flex flex-wrap items-center gap-4">
-                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-sarva-primary to-sarva-primaryDark">
+                <div className="sarva-payment-student-identity flex flex-wrap items-center gap-4">
+                  <div className="sarva-payment-student-avatar h-16 w-16 shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-sarva-primary to-sarva-primaryDark">
                     {selected.student.photo?.url ? (
                       <img src={selected.student.photo.url} alt="" className="h-full w-full object-cover object-top" />
                     ) : (
@@ -392,14 +392,14 @@ export default function Payments() {
                       </div>
                     )}
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-display text-lg font-semibold text-sarva-text">{selected.student.name}</span>
-                      <Badge tone={selected.student.status === 'active' ? 'success' : 'muted'}>{selected.student.status}</Badge>
+                  <div className="sarva-payment-student-copy min-w-0 flex-1">
+                    <div className="sarva-payment-student-name-row flex min-w-0 items-center gap-2">
+                      <span className="sarva-payment-student-name min-w-0 font-display text-lg font-semibold text-sarva-text">{selected.student.name}</span>
+                      <span className="sarva-payment-student-status shrink-0"><Badge tone={selected.student.status === 'active' ? 'success' : 'muted'}>{selected.student.status}</Badge></span>
                     </div>
-                    <div className="text-xs text-sarva-muted">{selected.student.studentCode} \u00b7 {selected.student.phone}</div>
+                    <div className="sarva-payment-student-meta text-xs text-sarva-muted">{[selected.student.studentCode, selected.student.phone].filter(Boolean).join(' · ')}</div>
                   </div>
-                  <button onClick={() => nav(`/students/${selected.student._id}`)} className="text-xs font-semibold text-sarva-primary hover:underline">
+                  <button onClick={() => nav(`/students/${selected.student._id}`)} className="sarva-payment-profile-link text-xs font-semibold text-sarva-primary hover:underline">
                     View Student Profile
                   </button>
                 </div>

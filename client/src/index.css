@@ -1262,3 +1262,57 @@ form,
   .sarva-mobile-safe-grid > *:nth-child(4) { animation-delay: 135ms; }
   @keyframes sarvaCardIn { from { opacity:0; transform:translateY(10px) scale(.985); } to { opacity:1; transform:none; } }
 }
+
+
+/* Payments: keep the selected-student identity readable on narrow phones. */
+.sarva-payment-student-copy,
+.sarva-payment-student-name-row,
+.sarva-payment-student-name { min-width: 0; }
+.sarva-payment-student-name { overflow-wrap: normal; word-break: normal; }
+.sarva-payment-student-meta { overflow-wrap: anywhere; }
+.sarva-payment-student-status { white-space: nowrap; }
+
+@media (max-width: 639px) {
+  .sarva-payment-student-identity {
+    display: grid !important;
+    grid-template-columns: 64px minmax(0, 1fr) !important;
+    gap: 12px !important;
+    align-items: center !important;
+  }
+  .sarva-payment-student-avatar { width: 64px !important; height: 64px !important; }
+  .sarva-payment-student-copy { width: 100%; }
+  .sarva-payment-student-name-row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 6px 8px !important;
+  }
+  .sarva-payment-student-name {
+    flex: 1 1 150px;
+    font-size: clamp(1rem, 4.8vw, 1.2rem) !important;
+    line-height: 1.2 !important;
+    white-space: normal !important;
+  }
+  .sarva-payment-student-meta {
+    margin-top: 4px;
+    line-height: 1.45;
+  }
+  .sarva-payment-profile-link {
+    grid-column: 1 / -1;
+    display: flex !important;
+    width: 100%;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--sarva-border);
+    border-radius: 14px;
+    background: #fff;
+    text-decoration: none !important;
+  }
+}
+
+@media (max-width: 359px) {
+  .sarva-payment-student-identity { grid-template-columns: 56px minmax(0, 1fr) !important; gap: 10px !important; }
+  .sarva-payment-student-avatar { width: 56px !important; height: 56px !important; }
+  .sarva-payment-student-name { flex-basis: 120px; font-size: 1rem !important; }
+}
