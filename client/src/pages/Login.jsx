@@ -3,9 +3,10 @@ import { ArrowLeft, Eye, EyeOff, LockKeyhole, Mail, ShieldCheck } from 'lucide-r
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/Auth';
 import SarvaMark from '../components/SarvaMark';
+import GoogleSignIn from '../components/GoogleSignIn';
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, googleLogin } = useAuth();
   const [f, setF] = useState({ email: '', password: '' });
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,6 +24,15 @@ export default function Login() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const google = async (credential) => {
+    setErr(''); setLoading(true);
+    try {
+      const data = await googleLogin(credential);
+      if (data.needsOnboarding) { sessionStorage.setItem('sarva_google_onboarding', data.onboardingToken); location.href = '/signup?google=1'; return; }
+      location.href = '/';
+    } catch (x) { setErr(x.response?.data?.message || x.message || 'Google sign-in failed'); } finally { setLoading(false); }
   };
 
   return (
@@ -55,6 +65,9 @@ export default function Login() {
           </div>
 
           {err && <div className="sarva-auth-error" role="alert">{err}</div>}
+
+          <div className="sarva-google-section"><GoogleSignIn onCredential={google} onError={setErr} disabled={loading}/></div>
+          <div className="sarva-auth-divider"><span>OR</span></div>
 
           <div className="sarva-auth-fields">
             <label className="sarva-auth-field">

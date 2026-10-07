@@ -1,29 +1,15 @@
-import { ArrowLeft, Building2, CheckCircle2, ShieldCheck } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import {useCallback,useState} from 'react';
+import {ArrowLeft,Eye,EyeOff,LockKeyhole,Mail,UserRound,Building2,Phone,MapPin} from 'lucide-react';
+import {Link} from 'react-router-dom';
 import SarvaMark from '../components/SarvaMark';
+import GoogleSignIn from '../components/GoogleSignIn';
+import api from '../services/api';
 
-export default function SignUp() {
-  return (
-    <main className="sarva-signup-shell">
-      <section className="sarva-signup-card">
-        <Link to="/login" className="sarva-auth-back" aria-label="Back to sign in"><ArrowLeft size={19}/></Link>
-        <div className="sarva-auth-mobile-logo">
-          <span className="sarva-auth-mobile-mark"><SarvaMark style={{ width: 34, height: 34 }} /></span>
-          <div><strong>SARVA Hostel</strong><small>Hostel management</small></div>
-        </div>
-        <div className="sarva-auth-heading">
-          <span className="sarva-auth-eyebrow">GET SARVA HOSTEL</span>
-          <h2>Set up your hostel workspace</h2>
-          <p>New hostel accounts are provisioned securely before the owner receives sign-in access.</p>
-        </div>
-        <div className="sarva-signup-steps">
-          <div><span><Building2 size={18}/></span><p><b>Hostel setup</b><small>Your hostel workspace and owner access are created together.</small></p></div>
-          <div><span><ShieldCheck size={18}/></span><p><b>Secure owner account</b><small>Only approved credentials can access hostel records.</small></p></div>
-          <div><span><CheckCircle2 size={18}/></span><p><b>Ready to operate</b><small>Sign in and start managing students, rooms and payments.</small></p></div>
-        </div>
-        <div className="sarva-signup-note">Online self-registration is not enabled by the current SARVA Hostel API, so this screen does not create fake or unsecured accounts.</div>
-        <Link to="/login" className="sarva-auth-submit">I already have an account</Link>
-      </section>
-    </main>
-  );
+export default function SignUp(){
+ const googleMode=new URLSearchParams(location.search).get('google')==='1';
+ const [f,setF]=useState({ownerName:'',hostelName:'',email:'',phone:'',address:'',password:'',confirm:''}); const [err,setErr]=useState(''); const [ok,setOk]=useState(''); const [loading,setLoading]=useState(false); const [show,setShow]=useState(false);
+ const finishGoogle=async()=>{const onboardingToken=sessionStorage.getItem('sarva_google_onboarding');if(!onboardingToken)throw new Error('Google session expired. Please sign in with Google again.');const {data}=await api.post('/auth/google/complete',{onboardingToken,hostelName:f.hostelName,phone:f.phone,address:f.address});sessionStorage.removeItem('sarva_google_onboarding');setOk(data.message||'Registration submitted for approval.');};
+ const submit=async(e)=>{e.preventDefault();setErr('');setOk('');if(!googleMode&&f.password!==f.confirm)return setErr('Passwords do not match');setLoading(true);try{if(googleMode)await finishGoogle();else{const {data}=await api.post('/auth/register-hostel',f);setOk(data.message)}}catch(x){setErr(x.response?.data?.message||x.message||'Registration failed')}finally{setLoading(false)}};
+ const google=useCallback(async credential=>{setErr('');setLoading(true);try{const {data}=await api.post('/auth/google',{credential});if(data.token){localStorage.setItem('hostel_token',data.token);location.href='/';return}sessionStorage.setItem('sarva_google_onboarding',data.onboardingToken);location.href='/signup?google=1'}catch(x){setErr(x.response?.data?.message||'Google sign-in failed')}finally{setLoading(false)}},[]);
+ return <main className="sarva-signup-shell"><section className="sarva-signup-card"><Link to="/login" className="sarva-auth-back"><ArrowLeft size={19}/></Link><div className="sarva-auth-mobile-logo"><span className="sarva-auth-mobile-mark"><SarvaMark style={{width:34,height:34}}/></span><div><strong>SARVA Hostel</strong><small>Hostel management</small></div></div><div className="sarva-auth-heading"><span className="sarva-auth-eyebrow">{googleMode?'COMPLETE SETUP':'CREATE ACCOUNT'}</span><h2>{googleMode?'Set up your hostel':'Start with SARVA Hostel'}</h2><p>{googleMode?'Google verified. Add the hostel details needed for approval.':'Register with Google or email and password.'}</p></div>{err&&<div className="sarva-auth-error" role="alert">{err}</div>}{ok&&<div className="sarva-auth-success" role="status">{ok} <Link to="/login">Sign in</Link></div>}{!googleMode&&<><div className="sarva-google-section"><GoogleSignIn onCredential={google} onError={setErr} disabled={loading}/></div><div className="sarva-auth-divider"><span>OR</span></div></>}<form onSubmit={submit} className="sarva-auth-fields">{!googleMode&&<label className="sarva-auth-field"><span>Owner name</span><div className="sarva-auth-input"><UserRound size={18}/><input required value={f.ownerName} onChange={e=>setF({...f,ownerName:e.target.value})}/></div></label>}<label className="sarva-auth-field"><span>Hostel name</span><div className="sarva-auth-input"><Building2 size={18}/><input required value={f.hostelName} onChange={e=>setF({...f,hostelName:e.target.value})}/></div></label>{!googleMode&&<label className="sarva-auth-field"><span>Email</span><div className="sarva-auth-input"><Mail size={18}/><input type="email" autoComplete="email" required value={f.email} onChange={e=>setF({...f,email:e.target.value})}/></div></label>}<label className="sarva-auth-field"><span>Phone</span><div className="sarva-auth-input"><Phone size={18}/><input value={f.phone} onChange={e=>setF({...f,phone:e.target.value})}/></div></label><label className="sarva-auth-field"><span>Address</span><div className="sarva-auth-input"><MapPin size={18}/><input value={f.address} onChange={e=>setF({...f,address:e.target.value})}/></div></label>{!googleMode&&<><label className="sarva-auth-field"><span>Password</span><div className="sarva-auth-input"><LockKeyhole size={18}/><input type={show?'text':'password'} autoComplete="new-password" minLength={8} required value={f.password} onChange={e=>setF({...f,password:e.target.value})}/><button type="button" onClick={()=>setShow(!show)} aria-label="Toggle password visibility">{show?<EyeOff size={18}/>:<Eye size={18}/>}</button></div></label><label className="sarva-auth-field"><span>Confirm password</span><div className="sarva-auth-input"><LockKeyhole size={18}/><input type={show?'text':'password'} autoComplete="new-password" minLength={8} required value={f.confirm} onChange={e=>setF({...f,confirm:e.target.value})}/></div></label></>}<button disabled={loading} className="sarva-auth-submit">{loading?'Please wait…':googleMode?'Submit for approval':'Create account'}</button></form><p className="sarva-auth-switch">Already registered? <Link to="/login">Sign in</Link></p></section></main>
 }

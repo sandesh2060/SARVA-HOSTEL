@@ -23,7 +23,7 @@ const app = express();
 app.use(helmet());
 app.use(
   cors({
-    origin: (process.env.CLIENT_URL || "http://localhost:5173").split(","),
+    origin: (process.env.CLIENT_URL || "http://localhost:5173").split(",").map((x)=>x.trim().replace(/\/$/, "")).filter(Boolean),
     credentials: true,
   }),
 );

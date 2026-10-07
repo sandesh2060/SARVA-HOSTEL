@@ -337,9 +337,9 @@ export function Switch({ checked, onChange, label, help, disabled = false }) {
         aria-checked={checked}
         disabled={disabled}
         onClick={() => !disabled && onChange(!checked)}
-        className={`relative h-6 w-11 shrink-0 rounded-full transition ${checked ? 'bg-sarva-primary' : 'bg-sarva-border'}`}
+        className={`sarva-switch ${checked ? 'is-checked' : ''}`}
       >
-        <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-5' : 'translate-x-0.5'}`} />
+        <span className="sarva-switch__thumb" />
       </button>
     </label>
   );
