@@ -117,7 +117,7 @@ export default function Dashboard() {
         params.to = to;
       }
       const { data: res } = await api.get('/dashboard/summary', { params });
-      setData(res.data);
+      setData(res);
     } catch (e) {
       setError(e.response?.data?.message || e.message);
     } finally {
