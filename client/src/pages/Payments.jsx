@@ -6,13 +6,16 @@ import { useAuth } from '../context/Auth';
 import { emitDashboardChange } from '../utils/dashboardBus';
 import {
   Search, Wallet, CreditCard, AlertTriangle, CalendarClock, QrCode, Banknote,
-  Smartphone, CheckCircle2, ArrowLeft, ChevronRight,
+  Smartphone, CheckCircle2, ArrowLeft, ChevronRight, Download, Share2,
 } from 'lucide-react';
 
 const num = (v) => Number(v?.$numberDecimal ?? v ?? 0);
 const dayMs = 86400000;
 
 const INVOICE_TONE = { open: 'muted', partial: 'warning', overdue: 'danger', paid: 'success', void: 'muted' };
+const dueLabel = (invoice) => invoice.daysOverdue > 0 ? `${invoice.daysOverdue} day${invoice.daysOverdue === 1 ? '' : 's'} overdue` : invoice.daysUntilDue === 0 ? 'Due today' : invoice.daysUntilDue != null ? `${invoice.daysUntilDue} day${invoice.daysUntilDue === 1 ? '' : 's'} remaining` : 'No due date';
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
 
 function sortInvoicesByDue(invoices) {
   return [...invoices].sort((a, b) => {
@@ -265,6 +268,23 @@ export default function Payments() {
     }
   };
 
+  const buildStatementHtml = useCallback(async () => {
+    if (!selected?.student?._id) return null;
+    const { data } = await api.get(`/students/${selected.student._id}/payment-statement`);
+    const currency = data.hostel?.currency || cur;
+    const rows = data.invoices.map((i) => `<tr><td>${esc(i.periodKey)}</td><td>${esc(i.dueDate ? new Date(i.dueDate).toLocaleDateString() : '—')}</td><td>${esc(money(i.baseTotal,currency))}</td><td>${esc(money(i.fineTotal,currency))}</td><td>${esc(money(i.paid,currency))}</td><td>${esc(money(i.balance,currency))}</td><td>${esc(dueLabel(i))}</td></tr>`).join('');
+    const qr = data.hostel?.manualQrImage ? `<div class="qr"><img src="${esc(data.hostel.manualQrImage)}" alt="Payment QR"><div><b>Scan to pay</b><br>${esc(data.hostel.name)}</div></div>` : '';
+    return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(data.student.name)} - Payment Statement</title><style>body{font-family:Arial,sans-serif;color:#25171d;margin:32px}h1{color:#6b2941;margin-bottom:4px}.muted{color:#776a70}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:22px 0}.box{border:1px solid #eadde2;border-radius:12px;padding:12px}.box b{display:block;font-size:18px;margin-top:5px}table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:9px;border-bottom:1px solid #eee;text-align:left}th{background:#f8f3f5}.qr{margin-top:24px;display:flex;align-items:center;gap:14px}.qr img{width:120px;height:120px;object-fit:contain}.foot{margin-top:28px;font-size:11px;color:#776a70}@media print{body{margin:14mm}.no-print{display:none}}</style></head><body><h1>SARVA Hostel</h1><div class="muted">${esc(data.hostel.name)} · Payment statement</div><h2>${esc(data.student.name)}</h2><div class="muted">${esc(data.student.studentCode)} · ${esc(data.student.phone)}</div><div class="summary"><div class="box">Total billed<b>${esc(money(data.summary.billed,currency))}</b></div><div class="box">Late fees<b>${esc(money(data.summary.lateFees,currency))}</b></div><div class="box">Total paid<b>${esc(money(data.summary.paid,currency))}</b></div><div class="box">Outstanding<b>${esc(money(data.summary.outstanding,currency))}</b></div></div><table><thead><tr><th>Period</th><th>Due date</th><th>Base fee</th><th>Late fee</th><th>Paid</th><th>Remaining</th><th>Status</th></tr></thead><tbody>${rows || '<tr><td colspan="7">No invoices</td></tr>'}</tbody></table>${qr}<div class="foot">Generated ${esc(new Date(data.generatedAt).toLocaleString())} · Powered by SARVA Hostel</div></body></html>`;
+  }, [selected, cur]);
+
+  const downloadStatement = useCallback(async () => {
+    try { const html=await buildStatementHtml(); if(!html)return; const blob=new Blob([html],{type:'text/html'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`${selected.student.studentCode || 'student'}-payment-statement.html`; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000); } catch(e){ setPayError(e.response?.data?.message || e.message); }
+  }, [buildStatementHtml, selected]);
+
+  const shareStatement = useCallback(async () => {
+    try { const html=await buildStatementHtml(); if(!html)return; const file=new File([html],`${selected.student.studentCode || 'student'}-payment-statement.html`,{type:'text/html'}); if(navigator.share && navigator.canShare?.({files:[file]})) await navigator.share({title:`${selected.student.name} payment statement`,files:[file]}); else await downloadStatement(); } catch(e){ if(e?.name!=='AbortError') setPayError(e.response?.data?.message || e.message); }
+  }, [buildStatementHtml, downloadStatement, selected]);
+
   const collectAnother = () => {
     changeStudent();
     setQuery('');
@@ -444,7 +464,12 @@ export default function Payments() {
                     {/* Method */}
                     <div>
                       <h3 className="mb-2 text-sm font-semibold text-sarva-text">Payment Method</h3>
-                      <div className="grid gap-3 sm:grid-cols-3">
+                      <div className="flex flex-wrap gap-2">
+                  <Button variant="ghost" onClick={downloadStatement}><Download size={15}/> Download statement</Button>
+                  <Button variant="ghost" onClick={shareStatement}><Share2 size={15}/> Share</Button>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-3">
                         {paymentMethods.cash && (
                           <button
                             onClick={() => setMethod('cash')}
