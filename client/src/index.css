@@ -820,3 +820,75 @@ form,
   .sarva-student-card-desktop { display:block; position:absolute; inset:0; }
 }
 
+/* ==========================================================================
+   SARVA MOBILE RESPONSIVE HARDENING
+   Prevent long values, controls and data cards from escaping narrow screens.
+   ========================================================================== */
+.sarva-metric-value,
+.sarva-stat-value,
+.sarva-hero-metric {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  line-height: 1.05;
+}
+.sarva-metric-value { font-size: clamp(1.25rem, 4.8vw, 1.5rem); }
+.sarva-stat-value { font-size: clamp(1.35rem, 5.3vw, 1.875rem); }
+.sarva-hero-metric { font-size: clamp(1.55rem, 6.2vw, 1.875rem); }
+
+@media (max-width: 639px) {
+  html, body, #root { width: 100%; max-width: 100%; overflow-x: clip; }
+  main, main > div, .sarva-dashboard, .sarva-dashboard > *, .sarva-page-header { min-width: 0; max-width: 100%; }
+
+  /* Native-app density: page sections stay inside the viewport. */
+  .sarva-dashboard { row-gap: 12px !important; }
+  .sarva-dashboard section,
+  .sarva-dashboard .card,
+  .sarva-dashboard .card-hover { min-width: 0; }
+  .sarva-dashboard .grid > * { min-width: 0; }
+
+  /* KPI/stat values can be currency strings; never let them leave the card. */
+  .sarva-metric-value,
+  .sarva-stat-value,
+  .sarva-hero-metric {
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sarva-metric-value { font-size: clamp(1.05rem, 5.1vw, 1.35rem); }
+  .sarva-stat-value { font-size: clamp(1.05rem, 5vw, 1.45rem); }
+  .sarva-hero-metric { font-size: clamp(1.35rem, 6.6vw, 1.7rem); }
+
+  /* Two-up summary cards remain useful, but become one column on very narrow phones. */
+  .sarva-mobile-safe-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  /* Shared controls must shrink instead of forcing horizontal page overflow. */
+  input, select, textarea, button { max-width: 100%; }
+  .sarva-page-actions > * { max-width: min(88vw, 360px); }
+  .sarva-page-actions select,
+  .sarva-page-actions input { min-width: 0; }
+
+  /* Tables stay locally scrollable rather than widening the entire app. */
+  .table-wrap, .overflow-x-auto { max-width: 100%; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+
+  /* Compact common cards/forms for phone widths. */
+  section.card { padding: 14px; }
+  section.card > h2 { margin-bottom: 12px; font-size: .95rem; }
+  .sarva-dashboard-welcome { min-width: 0; }
+  .sarva-dashboard-welcome__action { width: 100%; justify-content: center; }
+
+  /* Long student/room/payment identifiers may wrap, but never widen a card. */
+  .sarva-student-card,
+  .sarva-student-card * { min-width: 0; }
+  .sarva-student-card-mobile > div { min-width: 0; }
+}
+
+@media (max-width: 374px) {
+  main { padding-inline: 10px !important; }
+  .sarva-stat-value { font-size: 1rem; }
+  .sarva-metric-value { font-size: 1.05rem; }
+  .sarva-hero-metric { font-size: 1.3rem; }
+  .sarva-page-header h1 { font-size: 1.08rem; }
+  .sarva-mobile-brandbar { padding-inline: 12px; }
+}
+

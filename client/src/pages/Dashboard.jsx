@@ -186,7 +186,7 @@ export default function Dashboard() {
                   <Wallet size={16} />
                 </span>
               </div>
-              <div className="mt-3 text-3xl font-bold">{money(data.finance.collected, cur)}</div>
+              <div className="sarva-hero-metric mt-3 min-w-0 tabular-nums font-bold" title={money(data.finance.collected, cur)}>{money(data.finance.collected, cur)}</div>
               <div className="mt-1 text-xs text-white/70">
                 {data.finance.collectedChangePct === null || data.finance.collectedChangePct === undefined
                   ? 'This period'

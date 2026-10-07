@@ -35,7 +35,7 @@ export function KPI({ label, value, help, icon: Icon, className = '' }) {
           </span>
         )}
       </div>
-      <div className="mt-2 text-2xl font-bold tabular-nums tracking-tight text-sarva-text">{value}</div>
+      <div className="sarva-metric-value mt-2 min-w-0 tabular-nums font-bold tracking-tight text-sarva-text" title={typeof value === 'string' ? value : undefined}>{value}</div>
       {help && <div className="mt-1 text-xs text-sarva-muted">{help}</div>}
     </Card>
   );
@@ -59,7 +59,7 @@ export function StatCard({ label, value, icon: Icon, tone = 'primary' }) {
           </span>
         )}
       </div>
-      <div className="mt-2 text-3xl font-bold tabular-nums tracking-tight text-sarva-text">{value}</div>
+      <div className="sarva-stat-value mt-2 min-w-0 tabular-nums font-bold tracking-tight text-sarva-text" title={typeof value === 'string' ? value : undefined}>{value}</div>
     </div>
   );
 }

@@ -278,11 +278,11 @@ export default function Payments() {
       {summaryErr ? (
         <ErrorState message={summaryErr} onRetry={loadSummary} />
       ) : summaryLoading ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="sarva-mobile-safe-grid grid grid-cols-2 gap-3 sm:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => <div key={i} className="skeleton h-24 rounded-[1.5rem]" />)}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="sarva-mobile-safe-grid grid grid-cols-2 gap-3 sm:grid-cols-4">
           <StatCard label="Collected Today" value={money(todaySummary?.finance?.collected, cur)} icon={Wallet} tone="success" />
           <StatCard label="Collected This Month" value={money(monthSummary?.finance?.collected, cur)} icon={Wallet} tone="primary" />
           <StatCard label="Outstanding" value={money(monthSummary?.finance?.outstanding, cur)} icon={CreditCard} tone="warning" />
@@ -384,7 +384,7 @@ export default function Payments() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <div className="sarva-mobile-safe-grid grid grid-cols-2 gap-3 sm:grid-cols-4">
                   <StatCard label="Outstanding" value={money(totalOutstanding, cur)} icon={CreditCard} tone={totalOutstanding > 0 ? 'warning' : 'success'} />
                   <StatCard label="Overdue" value={money(overdueTotal, cur)} icon={AlertTriangle} tone="gold" />
                   <StatCard label="Credit" value={money(creditOutstanding, cur)} icon={Wallet} tone="primary" />
