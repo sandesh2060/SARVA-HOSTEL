@@ -196,7 +196,26 @@ export default function Students() {
         </div>
       }
     >
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <section className="sarva-students-mobile-summary" aria-label="Student summary">
+        <div>
+          <span>Students</span>
+          <strong>{counts.total}</strong>
+        </div>
+        <div>
+          <span>Active</span>
+          <strong>{counts.active}</strong>
+        </div>
+        <div>
+          <span>On leave</span>
+          <strong>{counts.on_leave}</strong>
+        </div>
+        <div>
+          <span>Checked out</span>
+          <strong>{counts.checked_out}</strong>
+        </div>
+      </section>
+
+      <div className="sarva-students-desktop-stats grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard label="Total students" value={counts.total} icon={Users} tone="primary" />
         <StatCard label="Active" value={counts.active} icon={UserCheck} tone="success" />
         <StatCard label="On leave" value={counts.on_leave} icon={Clock} tone="warning" />
@@ -205,7 +224,7 @@ export default function Students() {
 
       <form
         onSubmit={(e) => { e.preventDefault(); load(query); }}
-        className="mt-4 flex flex-col gap-2 rounded-full bg-sarva-surface p-2 shadow-premium-sm sm:flex-row sm:items-center"
+        className="sarva-students-search mt-4 flex flex-col gap-2 rounded-full bg-sarva-surface p-2 shadow-premium-sm sm:flex-row sm:items-center"
       >
         <div className="relative flex-1">
           <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sarva-muted" />
@@ -216,20 +235,20 @@ export default function Students() {
             className="w-full rounded-full bg-transparent py-2.5 pl-11 pr-4 text-sm outline-none placeholder:text-sarva-muted"
           />
         </div>
-        <Button type="submit" variant="gold" className="sm:px-6">
+        <Button type="submit" variant="gold" className="sarva-students-search-submit sm:px-6">
           <Search size={15} /> Search
         </Button>
       </form>
 
-      <div className="mt-4">
+      <div className="sarva-students-filters mt-4">
         <PillTabs options={STATUS_FILTERS} value={statusFilter} onChange={setStatusFilter} />
       </div>
 
-      <div className="mt-6">
+      <div className="sarva-students-list mt-6">
         {error ? (
           <ErrorState message={error} onRetry={() => load(query)} />
         ) : loading ? (
-          <div className="grid grid-cols-1 items-start gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="sarva-students-grid grid grid-cols-1 items-start gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
               <StudentCardSkeleton key={i} />
             ))}
@@ -248,10 +267,10 @@ export default function Students() {
           )
         ) : (
           <>
-            <div className="mb-3 px-1 text-xs font-semibold uppercase tracking-wider text-sarva-muted">
+            <div className="sarva-students-list-heading mb-3 px-1 text-xs font-semibold uppercase tracking-wider text-sarva-muted">
               Students ({filtered.length})
             </div>
-            <div className="grid grid-cols-1 items-start gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="sarva-students-grid grid grid-cols-1 items-start gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filtered.map((s) => {
                 const bed = bedByStudent.get(s._id);
                 const feeAmount = Number(s.monthlyFee?.$numberDecimal ?? s.monthlyFee ?? 0);
