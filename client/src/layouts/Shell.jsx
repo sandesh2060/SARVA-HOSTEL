@@ -18,7 +18,7 @@ function PaymentQrFab() {
   if (!qr) return null;
 
   return (
-    <div className="fixed bottom-24 right-4 z-40 sm:right-6 lg:bottom-6 flex flex-col items-end gap-3">
+    <div className="sarva-payment-qr-fab fixed bottom-24 right-4 z-40 sm:right-6 lg:bottom-6 flex flex-col items-end gap-3">
       {open && (
         <div className="w-64 animate-fade-in overflow-hidden rounded-[1.5rem] bg-sarva-surface p-4 shadow-premium">
           <div className="mb-3 flex items-center justify-between">

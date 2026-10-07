@@ -1062,3 +1062,70 @@ form,
 @media(max-width:639px){body{background:#f6f3f4}.sarva-dashboard{gap:0!important}.sarva-dashboard>.sarva-page-header,.sarva-dashboard>.sarva-dashboard-welcome{display:none!important}.sarva-dashboard-desktop-content{display:none!important}.sarva-mobile-home{display:grid;gap:14px;margin:-2px -1px 0;padding-bottom:8px}.sarva-mobile-balance{overflow:hidden;border-radius:24px;background:linear-gradient(135deg,var(--sarva-primary),#8d5066);color:#fff;box-shadow:0 20px 42px -30px rgba(73,25,44,.75)}.sarva-mobile-balance__top{display:flex;align-items:center;justify-content:space-between;padding:18px}.sarva-mobile-balance__top small{display:block;color:rgba(255,255,255,.58);font-size:8px;font-weight:800;letter-spacing:.13em}.sarva-mobile-balance__top strong{display:block;max-width:250px;margin-top:4px;overflow:hidden;text-overflow:ellipsis;font-size:clamp(1.35rem,7vw,1.85rem);font-weight:800;letter-spacing:-.04em;white-space:nowrap}.sarva-mobile-balance__top>span{display:grid;width:44px;height:44px;place-items:center;border-radius:15px;background:rgba(255,255,255,.12)}.sarva-mobile-balance__stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:#fff;color:var(--sarva-text)}.sarva-mobile-balance__stats button{display:flex;min-width:0;min-height:82px;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-right:1px solid var(--sarva-border);padding:10px 5px}.sarva-mobile-balance__stats button:last-child{border-right:0}.sarva-mobile-balance__stats svg{color:var(--sarva-primary)}.sarva-mobile-balance__stats b{max-width:100%;overflow:hidden;text-overflow:ellipsis;font-size:.76rem;white-space:nowrap}.sarva-mobile-balance__stats small{font-size:9px;color:var(--sarva-muted)}.sarva-mobile-service-card{border:1px solid rgba(103,44,67,.08);border-radius:24px;background:#fff;padding:17px;box-shadow:0 14px 36px -34px rgba(44,17,28,.65)}.sarva-mobile-section-head h2{font-size:1rem;font-weight:800;color:var(--sarva-text)}.sarva-mobile-section-head p{margin-top:2px;font-size:.67rem;color:var(--sarva-muted)}.sarva-mobile-service-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px 7px;margin-top:18px}.sarva-mobile-service-grid button{display:flex;min-width:0;flex-direction:column;align-items:center;gap:7px;text-align:center}.sarva-mobile-service-grid button>span{display:grid;width:48px;height:48px;place-items:center;border-radius:17px;background:var(--sarva-primarySoft);color:var(--sarva-primary)}.sarva-mobile-service-grid b{max-width:100%;font-size:9px;line-height:1.2;color:var(--sarva-text)}.sarva-mobile-action-list{display:grid;margin-top:10px}.sarva-mobile-action-list>button{display:grid;grid-template-columns:42px minmax(0,1fr) 20px;align-items:center;gap:10px;border-bottom:1px solid var(--sarva-border);padding:11px 0;text-align:left}.sarva-mobile-action-list>button:last-child{border-bottom:0}.sarva-mobile-action-list>button>span{display:grid;width:40px;height:40px;place-items:center;border-radius:13px;background:var(--sarva-primarySoft);color:var(--sarva-primary)}.sarva-mobile-action-list>button>span.is-warning{background:#fff5df;color:#a46d00}.sarva-mobile-action-list b,.sarva-mobile-action-list small{display:block;overflow:hidden;text-overflow:ellipsis}.sarva-mobile-action-list b{font-size:.78rem;color:var(--sarva-text)}.sarva-mobile-action-list small{margin-top:2px;color:var(--sarva-muted);font-size:.65rem;line-height:1.35}.sarva-mobile-action-list>button>svg{color:#b7a9af}.sarva-auth-panel,.sarva-signup-shell{padding:14px}.sarva-auth-card,.sarva-signup-card{border-radius:26px;padding:20px 18px}.sarva-auth-card{box-shadow:none}.sarva-auth-mobile-logo{margin-bottom:25px}.sarva-auth-heading h2{font-size:1.65rem}.sarva-auth-input{min-height:54px}.sarva-auth-submit{min-height:55px;border-radius:17px}}
 @media(min-width:640px){.sarva-onboarding{padding:48px}.sarva-onboarding__visual{min-height:360px}.sarva-onboarding__actions{max-width:420px}}
 
+
+/* ==========================================================================
+   SARVA MOBILE APP CONSISTENCY FIX
+   Keep the app shell, Home, Students, Payments and dialogs on one breakpoint.
+   ========================================================================== */
+@media (max-width: 1023px) {
+  /* The shell switches to mobile navigation below lg, so Home must do the same. */
+  .sarva-dashboard { gap: 0 !important; width: 100%; min-width: 0; }
+  .sarva-dashboard > .sarva-page-header,
+  .sarva-dashboard > .sarva-dashboard-welcome { display: none !important; }
+  .sarva-dashboard-desktop-content { display: none !important; }
+  .sarva-mobile-home {
+    display: grid !important;
+    width: 100%;
+    min-width: 0;
+    gap: 14px;
+    margin: 0;
+    padding-bottom: 12px;
+  }
+
+  /* Treat tablet/narrow desktop widths as the same touch-first app shell. */
+  main { padding: 14px 12px 0 !important; }
+  .sarva-page-header { margin-bottom: 2px; padding: 0 2px 8px; }
+  .sarva-page-actions { width: 100%; }
+  .sarva-page-actions > div { width: 100%; display: grid !important; grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
+  .sarva-page-actions button { width: 100%; min-height: 48px; }
+  .sarva-mobile-safe-grid { gap: 12px !important; }
+
+  /* Fixed app navigation must never cover page content. */
+  main > div { padding-bottom: 18px; }
+
+  /* Payment/Student cards read as native app surfaces instead of desktop panels. */
+  .card, .card-hover { border-radius: 24px !important; }
+  .sarva-stat-value { font-size: clamp(1.25rem, 5vw, 1.75rem); }
+
+  /* Payment QR floats above the bottom navigation. */
+  .sarva-payment-qr-fab { bottom: calc(86px + env(safe-area-inset-bottom)) !important; }
+}
+
+@media (max-width: 639px) {
+  .sarva-page-actions > div { gap: 10px !important; }
+  .sarva-page-actions button { padding-inline: 12px; font-size: 13px; }
+
+  /* Search bars become comfortable stacked app controls on narrow phones. */
+  form.rounded-full.bg-sarva-surface,
+  .card .flex.gap-2.rounded-full.bg-sarva-bg {
+    border-radius: 22px !important;
+  }
+  form.rounded-full.bg-sarva-surface { padding: 8px !important; }
+  form.rounded-full.bg-sarva-surface > button { width: 100%; min-height: 46px; }
+  .card .flex.gap-2.rounded-full.bg-sarva-bg { display: grid !important; grid-template-columns: minmax(0,1fr); gap: 8px !important; }
+  .card .flex.gap-2.rounded-full.bg-sarva-bg > button { width: 100%; min-height: 46px; }
+
+  /* Shared portal dialog: true viewport-centered sheet, above nav/FAB. */
+  body:has([role="dialog"]) .sarva-mobile-bottom,
+  body:has([role="dialog"]) .sarva-payment-qr-fab { visibility: hidden; pointer-events: none; }
+  [role="dialog"] { z-index: 200 !important; }
+  [role="dialog"] > section {
+    width: min(calc(100vw - 24px), 34rem) !important;
+    max-height: calc(100dvh - max(24px, env(safe-area-inset-top)) - max(24px, env(safe-area-inset-bottom))) !important;
+    margin: auto !important;
+    border-radius: 28px !important;
+  }
+  .sarva-invitation-modal { min-width: 0; }
+  .sarva-invitation-actions { grid-template-columns: 1fr !important; }
+  .sarva-invitation-actions button { width: 100%; min-height: 48px; }
+}
