@@ -3,7 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import api from '../services/api';
 import { Page, Card, StatCard, Button, Table, Badge, Empty, PillTabs, Input, Select, money } from '../components/UI';
 import { useAuth } from '../context/Auth';
-import { Wallet, CreditCard, BedDouble, Calendar, ArrowLeft, Phone, Pencil, FileText, X } from 'lucide-react';
+import { Wallet, CreditCard, BedDouble, Calendar, ArrowLeft, Phone, Pencil, FileText, X, ArrowRightLeft, CheckCircle2 } from 'lucide-react';
 
 const PAYMENT_STATUS_TONE = { confirmed: 'success', reversed: 'danger' };
 const CREDIT_TYPE_TONE = { charge: 'warning', repayment: 'success', adjustment: 'muted', reversal: 'danger' };
@@ -39,6 +39,12 @@ const DOC_TYPES = [
 ];
 const sidesFor = (type) => (['citizenship', 'nid'].includes(type) ? [['front', 'Front'], ['back', 'Back']] : [['single', 'Document']]);
 
+const bedLabel = (value) => {
+  const label = String(value || '').trim();
+  if (!label) return '\u2014';
+  return /^bed\b/i.test(label) ? label : `Bed ${label}`;
+};
+
 const num = (v) => Number(v?.$numberDecimal ?? v ?? 0);
 
 export default function StudentProfile() {
@@ -47,8 +53,15 @@ export default function StudentProfile() {
   const { hostel } = useAuth();
 
   const [d, setD] = useState(null);
-  const [room, setRoom] = useState({ current: null, history: [] });
+  const [room, setRoom] = useState({ current: null, history: [], rooms: [], beds: [] });
   const [roomLoading, setRoomLoading] = useState(true);
+  const [transferOpen, setTransferOpen] = useState(false);
+  const [transferRoomId, setTransferRoomId] = useState('');
+  const [transferBedId, setTransferBedId] = useState('');
+  const [transferReason, setTransferReason] = useState('');
+  const [transferReview, setTransferReview] = useState(false);
+  const [transferSaving, setTransferSaving] = useState(false);
+  const [transferError, setTransferError] = useState('');
   const [error, setError] = useState('');
   const [tab, setTab] = useState('overview');
 
@@ -74,7 +87,7 @@ export default function StudentProfile() {
       const mine = (data.assignments || []).filter((a) => (a.studentId?._id || a.studentId) === id);
       const current = mine.find((a) => a.active);
       const history = mine.filter((a) => !a.active).sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
-      setRoom({ current, history });
+      setRoom({ current, history, rooms: data.rooms || [], beds: data.beds || [] });
     } catch (e) {
       // Room management may be disabled (403) -- leave section hidden, not an error.
       if (e.response?.status !== 403) setError(e.response?.data?.message || e.message);
@@ -108,7 +121,44 @@ export default function StudentProfile() {
         bed: room.current.bedId?.label || '\u2014',
       }
     : null;
-  const roomText = roomParts ? `${roomParts.room} \u00b7 Bed ${roomParts.bed}` : 'Not assigned';
+  const roomText = roomParts ? `${roomParts.room} \u00b7 ${bedLabel(roomParts.bed)}` : 'Not assigned';
+
+  const currentBedId = String(room.current?.bedId?._id || room.current?.bedId || '');
+  const transferRooms = room.rooms.filter((r) => Number(r.availableCount || 0) > 0);
+  const transferBeds = room.beds.filter((b) =>
+    String(b.roomId?._id || b.roomId) === transferRoomId &&
+    String(b._id) !== currentBedId &&
+    b.status === 'available' && !b.studentId
+  );
+  const selectedTransferRoom = room.rooms.find((r) => String(r._id) === transferRoomId);
+  const selectedTransferBed = transferBeds.find((b) => String(b._id) === transferBedId);
+
+  const openTransfer = () => {
+    setTransferRoomId('');
+    setTransferBedId('');
+    setTransferReason('');
+    setTransferReview(false);
+    setTransferError('');
+    setTransferOpen(true);
+  };
+
+  const confirmTransfer = async () => {
+    if (!transferBedId || !transferReason.trim() || transferSaving) return;
+    setTransferSaving(true);
+    setTransferError('');
+    try {
+      await api.post('/rooms/transfer', { studentId: id, bedId: transferBedId, reason: transferReason.trim() });
+      await Promise.all([load(), loadRoom()]);
+      setTransferOpen(false);
+      setTransferReview(false);
+    } catch (e) {
+      setTransferError(e.response?.data?.message || e.message || 'Room transfer failed.');
+      setTransferReview(false);
+      if (e.response?.status === 409) await loadRoom();
+    } finally {
+      setTransferSaving(false);
+    }
+  };
 
   const checkout = async () => {
     const reason = prompt('Checkout reason');
@@ -474,6 +524,13 @@ export default function StudentProfile() {
 
       {tab === 'room' && (
         <Card title="Room">
+          {roomParts && s.status !== 'checked_out' && !roomLoading && (
+            <div className="mb-4 flex justify-end">
+              <Button onClick={openTransfer} className="w-full sm:w-auto">
+                <ArrowRightLeft size={14} /> Transfer Room
+              </Button>
+            </div>
+          )}
           {roomLoading ? (
             <div className="text-sm text-sarva-muted">Loading room details\u2026</div>
           ) : (
@@ -495,7 +552,7 @@ export default function StudentProfile() {
                     </div>
                     <div>
                       <div className="text-[11px] font-semibold uppercase tracking-wide text-sarva-muted">Bed</div>
-                      <div className="mt-1 text-sm font-semibold text-sarva-text">Bed {roomParts.bed}</div>
+                      <div className="mt-1 text-sm font-semibold text-sarva-text">{bedLabel(roomParts.bed)}</div>
                     </div>
                   </div>
                   <div className="mt-3 text-xs text-sarva-muted">
@@ -513,7 +570,7 @@ export default function StudentProfile() {
                     {room.history.map((h) => (
                       <div key={h._id} className="rounded-2xl bg-sarva-bg p-3 text-sm">
                         <div className="font-medium text-sarva-text">
-                          Building {h.roomId?.building || '\u2014'} \u00b7 Floor {h.roomId?.floor || '\u2014'} \u00b7 Room {h.roomId?.name || '\u2014'} \u00b7 Bed {h.bedId?.label || '\u2014'}
+                          Building {h.roomId?.building || '\u2014'} \u00b7 Floor {h.roomId?.floor || '\u2014'} \u00b7 Room {h.roomId?.name || '\u2014'} \u00b7 {bedLabel(h.bedId?.label)}
                         </div>
                         <div className="text-xs text-sarva-muted">
                           {new Date(h.startDate).toLocaleDateString()} \u2192 {h.endDate ? new Date(h.endDate).toLocaleDateString() : 'present'}
@@ -527,6 +584,34 @@ export default function StudentProfile() {
             </div>
           )}
         </Card>
+      )}
+
+      {transferOpen && (
+        <div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/45 backdrop-blur-sm sm:items-center sm:p-6" onMouseDown={(e) => { if (e.target === e.currentTarget && !transferSaving) setTransferOpen(false); }}>
+          <div role="dialog" aria-modal="true" aria-label="Transfer room" className="max-h-[92dvh] w-full overflow-y-auto rounded-t-[1.75rem] bg-white p-5 shadow-2xl sm:max-w-xl sm:rounded-[1.75rem] sm:p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div><div className="text-xs font-semibold uppercase tracking-[0.16em] text-sarva-primary">Room transfer</div><h2 className="mt-1 text-xl font-semibold text-sarva-text">{s.name}</h2><p className="mt-1 text-sm text-sarva-muted">Move the student while preserving billing and payment history.</p></div>
+              <button type="button" onClick={() => !transferSaving && setTransferOpen(false)} className="rounded-full p-2 text-sarva-muted hover:bg-sarva-bg" aria-label="Close"><X size={18} /></button>
+            </div>
+            <div className="mt-5 rounded-2xl border border-sarva-border bg-sarva-bg p-4"><div className="text-[11px] font-semibold uppercase tracking-wide text-sarva-muted">Current assignment</div><div className="mt-2 font-semibold text-sarva-text">{roomParts?.building} \u00b7 {roomParts?.floor} \u00b7 Room {roomParts?.room} \u00b7 {bedLabel(roomParts?.bed)}</div></div>
+            {!transferReview ? (
+              <div className="mt-5 space-y-4">
+                <div><label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-sarva-muted">New room</label><Select value={transferRoomId} onChange={(e) => { setTransferRoomId(e.target.value); setTransferBedId(''); setTransferError(''); }}><option value="">Select destination room</option>{transferRooms.map((r) => <option key={r._id} value={r._id}>{r.building || 'Building'} \u00b7 {r.floor || 'Floor'} \u00b7 Room {r.name} \u00b7 {r.availableCount || 0} available</option>)}</Select></div>
+                <div><label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-sarva-muted">Available bed</label><Select value={transferBedId} disabled={!transferRoomId} onChange={(e) => { setTransferBedId(e.target.value); setTransferError(''); }}><option value="">{transferRoomId ? 'Select available bed' : 'Select a room first'}</option>{transferBeds.map((b) => <option key={b._id} value={b._id}>{bedLabel(b.label)}</option>)}</Select>{transferRoomId && !transferBeds.length && <p className="mt-2 text-xs font-medium text-sarva-danger">No available bed in this room.</p>}</div>
+                <div><label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-sarva-muted">Transfer reason</label><textarea value={transferReason} onChange={(e) => { setTransferReason(e.target.value); setTransferError(''); }} rows={3} maxLength={300} placeholder="Example: Student requested room change" className="w-full resize-none rounded-xl border border-sarva-border bg-white px-3 py-2.5 text-sm outline-none focus:border-sarva-primary focus:ring-2 focus:ring-sarva-primary/20" /></div>
+                {transferError && <div className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-sarva-danger">{transferError}</div>}
+                <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"><Button variant="ghost" onClick={() => setTransferOpen(false)}>Cancel</Button><Button disabled={!transferRoomId || !transferBedId || !transferReason.trim()} onClick={() => setTransferReview(true)}>Review Transfer</Button></div>
+              </div>
+            ) : (
+              <div className="mt-5 space-y-4">
+                <div className="rounded-2xl border border-sarva-border p-4"><div className="grid gap-4 sm:grid-cols-[1fr_auto_1fr] sm:items-center"><div><div className="text-[11px] font-semibold uppercase tracking-wide text-sarva-muted">From</div><div className="mt-1 font-semibold">Room {roomParts?.room} \u00b7 {bedLabel(roomParts?.bed)}</div></div><ArrowRightLeft size={20} className="text-sarva-primary"/><div><div className="text-[11px] font-semibold uppercase tracking-wide text-sarva-muted">To</div><div className="mt-1 font-semibold">Room {selectedTransferRoom?.name || '\u2014'} \u00b7 {bedLabel(selectedTransferBed?.label)}</div></div></div><div className="mt-4 border-t border-sarva-border pt-3 text-sm text-sarva-muted">Reason: <span className="font-medium text-sarva-text">{transferReason.trim()}</span></div></div>
+                <div className="flex items-start gap-2 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800"><CheckCircle2 size={16} className="mt-0.5 shrink-0"/>Invoices and payment history remain unchanged.</div>
+                {transferError && <div className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-sarva-danger">{transferError}</div>}
+                <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"><Button variant="ghost" disabled={transferSaving} onClick={() => setTransferReview(false)}>Back</Button><Button loading={transferSaving} onClick={confirmTransfer}>Confirm Transfer</Button></div>
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       {tab === 'invoices' && (
