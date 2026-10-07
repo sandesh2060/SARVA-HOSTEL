@@ -442,9 +442,9 @@ export default function StudentProfile() {
             <div className="space-y-2 text-sm">
               <p><b>Permanent address:</b> {s.address?.permanent || '\u2014'}</p>
               <p><b>Current address:</b> {s.address?.current || '\u2014'}</p>
-              <p><b>Parent/guardian:</b> {s.guardian?.name || '\u2014'} \u00b7 {s.guardian?.phone || '\u2014'}</p>
-              <p><b>Local guardian:</b> {s.localGuardian?.name || '\u2014'} \u00b7 {s.localGuardian?.phone || '\u2014'}</p>
-              <p><b>Institution:</b> {s.academic?.institution || '\u2014'} {s.academic?.course || ''}</p>
+              <p><b>Parent/guardian:</b> {s.guardian?.name || '—'} · {s.guardian?.phone || '—'}</p>
+              <p><b>Local guardian:</b> {s.localGuardian?.name || '—'} · {s.localGuardian?.phone || '—'}</p>
+              <p><b>Institution:</b> {s.academic?.institution || '—'}{s.academic?.course ? ` · ${s.academic.course}` : ''}</p>
             </div>
           </Card>
 
@@ -570,7 +570,7 @@ export default function StudentProfile() {
                     {room.history.map((h) => (
                       <div key={h._id} className="rounded-2xl bg-sarva-bg p-3 text-sm">
                         <div className="font-medium text-sarva-text">
-                          Building {h.roomId?.building || '\u2014'} \u00b7 Floor {h.roomId?.floor || '\u2014'} \u00b7 Room {h.roomId?.name || '\u2014'} \u00b7 {bedLabel(h.bedId?.label)}
+                          Building {h.roomId?.building || '—'} · Floor {h.roomId?.floor || '—'} · Room {h.roomId?.name || '—'} · {bedLabel(h.bedId?.label)}
                         </div>
                         <div className="text-xs text-sarva-muted">
                           {new Date(h.startDate).toLocaleDateString()} \u2192 {h.endDate ? new Date(h.endDate).toLocaleDateString() : 'present'}
@@ -593,10 +593,10 @@ export default function StudentProfile() {
               <div><div className="text-xs font-semibold uppercase tracking-[0.16em] text-sarva-primary">Room transfer</div><h2 className="mt-1 text-xl font-semibold text-sarva-text">{s.name}</h2><p className="mt-1 text-sm text-sarva-muted">Move the student while preserving billing and payment history.</p></div>
               <button type="button" onClick={() => !transferSaving && setTransferOpen(false)} className="rounded-full p-2 text-sarva-muted hover:bg-sarva-bg" aria-label="Close"><X size={18} /></button>
             </div>
-            <div className="mt-5 rounded-2xl border border-sarva-border bg-sarva-bg p-4"><div className="text-[11px] font-semibold uppercase tracking-wide text-sarva-muted">Current assignment</div><div className="mt-2 font-semibold text-sarva-text">{roomParts?.building} \u00b7 {roomParts?.floor} \u00b7 Room {roomParts?.room} \u00b7 {bedLabel(roomParts?.bed)}</div></div>
+            <div className="mt-5 rounded-2xl border border-sarva-border bg-sarva-bg p-4"><div className="text-[11px] font-semibold uppercase tracking-wide text-sarva-muted">Current assignment</div><div className="mt-2 font-semibold text-sarva-text">{roomParts?.building} · {roomParts?.floor} · Room {roomParts?.room} · {bedLabel(roomParts?.bed)}</div></div>
             {!transferReview ? (
               <div className="mt-5 space-y-4">
-                <div><label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-sarva-muted">New room</label><Select value={transferRoomId} onChange={(e) => { setTransferRoomId(e.target.value); setTransferBedId(''); setTransferError(''); }}><option value="">Select destination room</option>{transferRooms.map((r) => <option key={r._id} value={r._id}>{r.building || 'Building'} \u00b7 {r.floor || 'Floor'} \u00b7 Room {r.name} \u00b7 {r.availableCount || 0} available</option>)}</Select></div>
+                <div><label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-sarva-muted">New room</label><Select value={transferRoomId} onChange={(e) => { setTransferRoomId(e.target.value); setTransferBedId(''); setTransferError(''); }}><option value="">Select destination room</option>{transferRooms.map((r) => <option key={r._id} value={r._id}>{r.building || 'Building'} · {r.floor || 'Floor'} · Room {r.name} — {r.availableCount || 0} {Number(r.availableCount) === 1 ? 'bed' : 'beds'} available</option>)}</Select></div>
                 <div><label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-sarva-muted">Available bed</label><Select value={transferBedId} disabled={!transferRoomId} onChange={(e) => { setTransferBedId(e.target.value); setTransferError(''); }}><option value="">{transferRoomId ? 'Select available bed' : 'Select a room first'}</option>{transferBeds.map((b) => <option key={b._id} value={b._id}>{bedLabel(b.label)}</option>)}</Select>{transferRoomId && !transferBeds.length && <p className="mt-2 text-xs font-medium text-sarva-danger">No available bed in this room.</p>}</div>
                 <div><label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-sarva-muted">Transfer reason</label><textarea value={transferReason} onChange={(e) => { setTransferReason(e.target.value); setTransferError(''); }} rows={3} maxLength={300} placeholder="Example: Student requested room change" className="w-full resize-none rounded-xl border border-sarva-border bg-white px-3 py-2.5 text-sm outline-none focus:border-sarva-primary focus:ring-2 focus:ring-sarva-primary/20" /></div>
                 {transferError && <div className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-sarva-danger">{transferError}</div>}
@@ -604,7 +604,7 @@ export default function StudentProfile() {
               </div>
             ) : (
               <div className="mt-5 space-y-4">
-                <div className="rounded-2xl border border-sarva-border p-4"><div className="grid gap-4 sm:grid-cols-[1fr_auto_1fr] sm:items-center"><div><div className="text-[11px] font-semibold uppercase tracking-wide text-sarva-muted">From</div><div className="mt-1 font-semibold">Room {roomParts?.room} \u00b7 {bedLabel(roomParts?.bed)}</div></div><ArrowRightLeft size={20} className="text-sarva-primary"/><div><div className="text-[11px] font-semibold uppercase tracking-wide text-sarva-muted">To</div><div className="mt-1 font-semibold">Room {selectedTransferRoom?.name || '\u2014'} \u00b7 {bedLabel(selectedTransferBed?.label)}</div></div></div><div className="mt-4 border-t border-sarva-border pt-3 text-sm text-sarva-muted">Reason: <span className="font-medium text-sarva-text">{transferReason.trim()}</span></div></div>
+                <div className="rounded-2xl border border-sarva-border p-4"><div className="grid gap-4 sm:grid-cols-[1fr_auto_1fr] sm:items-center"><div><div className="text-[11px] font-semibold uppercase tracking-wide text-sarva-muted">From</div><div className="mt-1 font-semibold">Room {roomParts?.room} · {bedLabel(roomParts?.bed)}</div></div><ArrowRightLeft size={20} className="text-sarva-primary"/><div><div className="text-[11px] font-semibold uppercase tracking-wide text-sarva-muted">To</div><div className="mt-1 font-semibold">Room {selectedTransferRoom?.name || '—'} · {bedLabel(selectedTransferBed?.label)}</div></div></div><div className="mt-4 border-t border-sarva-border pt-3 text-sm text-sarva-muted">Reason: <span className="font-medium text-sarva-text">{transferReason.trim()}</span></div></div>
                 <div className="flex items-start gap-2 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800"><CheckCircle2 size={16} className="mt-0.5 shrink-0"/>Invoices and payment history remain unchanged.</div>
                 {transferError && <div className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-sarva-danger">{transferError}</div>}
                 <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"><Button variant="ghost" disabled={transferSaving} onClick={() => setTransferReview(false)}>Back</Button><Button loading={transferSaving} onClick={confirmTransfer}>Confirm Transfer</Button></div>
