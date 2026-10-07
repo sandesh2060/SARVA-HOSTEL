@@ -146,8 +146,8 @@ export default function Payments() {
   );
   const nextDue = useMemo(() => {
     const upcoming = openInvoices.filter((i) => i.dueDate).sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
-    return upcoming[0]?.dueDate ? new Date(upcoming[0].dueDate).toLocaleDateString() : '\u2014';
-  }, [openInvoices]);
+    return upcoming[0]?.dueDate ? new Date(upcoming[0].dueDate).toLocaleDateString() : selected?.billing?.nextPayment?.primary || '\u2014';
+  }, [openInvoices, selected]);
 
   const creditOutstanding = useMemo(() => {
     const charged = (selected?.credits || []).filter((c) => c.type === 'charge').reduce((s, c) => s + num(c.amount), 0);
@@ -411,11 +411,19 @@ export default function Payments() {
                   <StatCard label="Next Due" value={nextDue} icon={CalendarClock} tone="primary" />
                 </div>
 
+                {selected.billing?.nextPaymentDate && <div className="rounded-2xl border border-sarva-border bg-gradient-to-br from-white to-sarva-primarySoft/30 p-4">
+                  <div className="flex items-start justify-between gap-3"><div><div className="text-[11px] font-semibold uppercase tracking-wider text-sarva-muted">Next Payment</div><div className="mt-1 font-display text-lg font-semibold text-sarva-text">{selected.billing.nextPayment?.primary}</div><div className="text-xs text-sarva-muted">{selected.billing.nextPayment?.secondary}</div></div><Badge tone="muted">{selected.billing.daysUntilNext} days</Badge></div>
+                  <div className="mt-3 flex items-center justify-between border-t border-sarva-border pt-3 text-sm"><span className="text-sarva-muted">Expected amount</span><span className="font-semibold text-sarva-text">{money(selected.billing.expectedNextAmount, cur)}</span></div>
+                </div>}
+
                 {/* Invoices */}
                 <div>
                   <h3 className="mb-2 text-sm font-semibold text-sarva-text">Outstanding Invoices</h3>
                   {!openInvoices.length ? (
-                    <Empty>No outstanding invoices. This student is fully paid up.</Empty>
+                    <div className="rounded-2xl border border-sarva-border bg-sarva-bg p-4">
+                      <div className="text-sm font-semibold text-sarva-text">No outstanding invoice right now.</div>
+                      <div className="mt-1 text-xs leading-5 text-sarva-muted">{selected.billing?.nextPaymentDate ? <>Next scheduled payment is <b className="text-sarva-text">{selected.billing.nextPayment?.primary}</b>{selected.billing.nextPayment?.secondary ? <> ({selected.billing.nextPayment.secondary})</> : null} for an expected <b className="text-sarva-text">{money(selected.billing.expectedNextAmount, cur)}</b>.</> : 'Billing has not been scheduled for this student yet.'}</div>
+                    </div>
                   ) : (
                     <div className="space-y-2">
                       {openInvoices.map((inv) => {

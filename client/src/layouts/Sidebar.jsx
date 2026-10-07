@@ -21,6 +21,7 @@ const groups = [
   ]},
   { label: 'Finance', items: [
     ['/payments', 'Payments', 'payments', WalletCards],
+    ['/calendar', 'Calendar', 'payments', CalendarRange],
     ['/billing', 'Billing', 'payments', CalendarRange],
     ['/credits', 'Credits', 'credit', BadgeDollarSign],
     ['/expenses', 'Expenses', 'expenses', ReceiptText],

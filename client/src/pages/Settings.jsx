@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
 import { Page, Card, Input, Select, Button, Switch, PillTabs } from '../components/UI';
-import { Building2, QrCode, Nfc, Fingerprint, Copy, ExternalLink, ClipboardList } from 'lucide-react';
+import { Building2, QrCode, Nfc, Fingerprint, Copy, ExternalLink, ClipboardList, CalendarDays } from 'lucide-react';
 
 const TABS = [
   ['profile', 'Hostel Profile'],
@@ -21,6 +21,7 @@ export default function Settings() {
   const [tab, setTab] = useState('profile');
   const [logoUploading, setLogoUploading] = useState(false);
   const [qrUploading, setQrUploading] = useState(false);
+  const [billingPreview, setBillingPreview] = useState(null);
 
   const load = () =>
     api.get('/settings').then(({ data: h }) => {
@@ -32,7 +33,10 @@ export default function Settings() {
         contactPhone: h.contact?.phone || '',
         contactAddress: h.contact?.address || '',
         contactLocation: h.contact?.location || '',
-        billingMode: h.settings?.billingMode || 'anniversary',
+        billingMode: h.settings?.billingMode || 'calendar',
+        billingCalendar: h.settings?.billingCalendar || 'BS',
+        billingDay: h.settings?.billingDay ?? 1,
+        firstBillPolicy: h.settings?.firstBillPolicy || 'prorate',
         graceDays: h.settings?.graceDays ?? 0,
         lateFeeEnabled: h.settings?.lateFee?.enabled ?? false,
         lateFeeType: h.settings?.lateFee?.type || 'daily_fixed',
@@ -58,6 +62,12 @@ export default function Settings() {
     });
 
   useEffect(() => { load(); }, []);
+
+  useEffect(() => {
+    if (!f?.billingCalendar || !f?.billingDay) return;
+    const t = setTimeout(() => api.get('/calendar/preview', { params: { calendar: f.billingCalendar, day: f.billingDay, graceDays: f.graceDays } }).then(({ data }) => setBillingPreview(data)).catch(() => setBillingPreview(null)), 250);
+    return () => clearTimeout(t);
+  }, [f?.billingCalendar, f?.billingDay, f?.graceDays]);
 
   const set = (key) => (e) => setF((prev) => ({ ...prev, [key]: e.target.value }));
   const toggle = (key) => (val) => setF((prev) => ({ ...prev, [key]: val }));
@@ -105,7 +115,10 @@ export default function Settings() {
         currency: f.currency,
         contact: { email: f.contactEmail, phone: f.contactPhone, address: f.contactAddress, location: f.contactLocation },
         settings: {
-          billingMode: f.billingMode,
+          billingMode: 'calendar',
+          billingCalendar: f.billingCalendar,
+          billingDay: Math.max(1, Number(f.billingDay) || 1),
+          firstBillPolicy: f.firstBillPolicy,
           graceDays: Math.max(0, Number(f.graceDays) || 0),
           lateFee: { enabled: f.lateFeeEnabled, type: f.lateFeeType, amount: Math.max(0, Number(f.lateFeeAmount) || 0), maxAmount: Math.max(0, Number(f.lateFeeMaxAmount) || 0) },
           reminderDays: f.reminderDays.split(',').map((x) => Number(x.trim())).filter((n) => Number.isFinite(n)),
@@ -222,16 +235,40 @@ export default function Settings() {
                 </Select>
               </label>
               <label className="block text-sm">
-                <span className="mb-1 block font-medium text-sarva-text">Billing mode</span>
-                <Select value={f.billingMode} onChange={set('billingMode')}>
-                  <option value="anniversary">Anniversary (from admission date)</option>
-                  <option value="calendar">Calendar month</option>
+                <span className="mb-1 block font-medium text-sarva-text">Billing calendar</span>
+                <Select value={f.billingCalendar} onChange={set('billingCalendar')}>
+                  <option value="BS">Nepali (Bikram Sambat)</option>
+                  <option value="AD">English (Gregorian)</option>
+                </Select>
+                <span className="mt-1 block text-[11px] text-sarva-muted">This controls the real monthly billing boundary, not only the displayed date.</span>
+              </label>
+              <label className="block text-sm">
+                <span className="mb-1 block font-medium text-sarva-text">Monthly payment day</span>
+                <Select value={f.billingDay} onChange={set('billingDay')}>
+                  {Array.from({ length: f.billingCalendar === 'BS' ? 32 : 31 }, (_, i) => i + 1).map((d) => <option key={d} value={d}>{d}{f.billingCalendar === 'BS' ? ' गते' : ''}</option>)}
+                </Select>
+                <span className="mt-1 block text-[11px] text-sarva-muted">If a selected day does not exist in a month, SARVA uses that month's last valid day.</span>
+              </label>
+              <label className="block text-sm">
+                <span className="mb-1 block font-medium text-sarva-text">First billing policy</span>
+                <Select value={f.firstBillPolicy} onChange={set('firstBillPolicy')}>
+                  <option value="prorate">Prorate first period</option>
+                  <option value="full">Charge full monthly fee</option>
+                  <option value="next_cycle">Start from next billing cycle</option>
                 </Select>
               </label>
               <label className="block text-sm">
                 <span className="mb-1 block font-medium text-sarva-text">Grace days</span>
                 <Input type="number" min="0" value={f.graceDays} onChange={set('graceDays')} />
               </label>
+              {billingPreview && <div className="sm:col-span-2 rounded-2xl border border-sarva-border bg-white p-4 shadow-premium-sm">
+                <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-sarva-text"><CalendarDays size={17} className="text-sarva-primary"/> Billing preview</div>
+                <div className="grid gap-3 text-sm sm:grid-cols-3">
+                  <div><div className="text-[11px] uppercase tracking-wide text-sarva-muted">Next payment</div><div className="mt-1 font-semibold text-sarva-text">{billingPreview.nextBilling?.primary}</div><div className="text-xs text-sarva-muted">{billingPreview.nextBilling?.secondary}</div></div>
+                  <div><div className="text-[11px] uppercase tracking-wide text-sarva-muted">Payment day</div><div className="mt-1 font-semibold text-sarva-text">{billingPreview.billingDay}{billingPreview.calendar === 'BS' ? ' गते' : ''}</div><div className="text-xs text-sarva-muted">{billingPreview.calendar === 'BS' ? 'Nepali BS' : 'English AD'}</div></div>
+                  <div><div className="text-[11px] uppercase tracking-wide text-sarva-muted">Late from</div><div className="mt-1 font-semibold text-sarva-text">{billingPreview.lateFrom?.primary}</div><div className="text-xs text-sarva-muted">After {billingPreview.graceDays} grace day(s)</div></div>
+                </div>
+              </div>}
               <div className="sm:col-span-2 rounded-2xl border border-sarva-border bg-sarva-bg p-4">
                 <Switch label="Automatic late fine" help="Automatically add a fine after the configured grace period. Existing invoices keep their original fine policy." checked={f.lateFeeEnabled} onChange={toggle('lateFeeEnabled')} />
                 {f.lateFeeEnabled && <div className="mt-4 grid gap-4 sm:grid-cols-3">

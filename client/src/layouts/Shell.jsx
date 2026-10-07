@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Bell, ChevronDown, LogOut, QrCode, Settings, UserRound, X } from 'lucide-react';
+import { Bell, CalendarDays, ChevronDown, LogOut, QrCode, Settings, UserRound, X } from 'lucide-react';
 import Sidebar from './Sidebar';
 import { useAuth } from '../context/Auth';
 import api from '../services/api';
@@ -125,6 +125,9 @@ export default function Shell() {
         </main>
       </div>
 
+      <div className="sarva-calendar-fab fixed bottom-[9.5rem] right-4 z-40 sm:right-6 lg:bottom-24">
+        <button type="button" onClick={() => navigate('/calendar')} className="flex h-12 w-12 items-center justify-center rounded-full border border-sarva-border bg-white text-sarva-primary shadow-premium transition hover:-translate-y-0.5 hover:bg-sarva-primarySoft" aria-label="Open smart calendar"><CalendarDays size={20}/></button>
+      </div>
       <PaymentQrFab />
     </div>
   );
